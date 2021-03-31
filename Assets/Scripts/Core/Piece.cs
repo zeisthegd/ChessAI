@@ -1,5 +1,4 @@
-﻿
-public static class Piece
+﻿public static class Piece
 {
     public const int None = 0; //0b000
     public const int King = 1; //0b001

@@ -12,6 +12,7 @@ public class BoardUI : MonoBehaviour
 
     public MeshRenderer[,] squareRenderers;
     public SpriteRenderer[,] squarePieceRenderers;
+    const float pieceDragDepth = -0.2f;
     const float pieceDepth = -0.1f;
 
     void Awake()
@@ -51,6 +52,42 @@ public class BoardUI : MonoBehaviour
     }
 
 
+    public bool TryGetSquareUnderMouse(Vector2 mouseWorldPos, out Coord selectedCoord)
+    {
+        int file = (int) (mouseWorldPos.x + 4);
+        int rank = (int) (mouseWorldPos.y + 4);
+        if(!whiteIsBottom)
+        {
+            file = 7 - file;
+            rank = 7 - rank;
+        }
+        selectedCoord = new Coord(file,rank);
+        return file >= 0 && file < 8 && rank >= 0 && rank < 8;
+
+    }
+
+    public void SetPerspective(bool whitePOV)
+    {
+        whiteIsBottom = whitePOV;
+        ResetSquarePositions();
+    }
+
+    public void SelectSquare(Coord coord)
+    {
+        SetSquareColor(coord,boardTheme.lightSquares.selected, boardTheme.darkSquares.selected);
+    }
+
+    public void DragPiece(Coord pieceCoord, Vector2 mousePos)
+    {
+        //Set vị trí của quân cờ thành vị trí của mouse
+        squarePieceRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = new Vector3(mousePos.x,mousePos.y,pieceDragDepth);
+    }
+
+    public void DeselectSquare(Coord coord)
+    {
+        ResetSquareColors();
+    }
+
     public void UpdatePosition(Board board)
     {
         for (int rank = 0; rank < 8; rank++)
@@ -65,6 +102,12 @@ public class BoardUI : MonoBehaviour
         }
     }
 
+    public void ResetPiecePosition(Coord pieceCoord)
+    {
+        Vector3 pos = PositionFromChord(pieceCoord,pieceDepth);
+        squarePieceRenderers[pieceCoord.fileIndex,pieceCoord.rankIndex].transform.position = pos;
+    }
+
     public void ResetSquareColors()
     {
         for (int rank = 0; rank < 8; rank++)
@@ -72,6 +115,17 @@ public class BoardUI : MonoBehaviour
             for (int file = 0; file < 8; file++)
             {
                 SetSquareColor(new Coord(file, rank), boardTheme.lightSquares.normal, boardTheme.darkSquares.normal);
+            }
+        }
+    }
+
+    void ResetSquarePositions(){
+        for (int rank = 0; rank < 8; rank++)
+        {
+            for (int file = 0; file < 8; file++)
+            {
+                squareRenderers[file,rank].transform.position = PositionFromCoord(file,rank,0);
+                squarePieceRenderers[file,rank].transform.position = PositionFromCoord(file,rank,pieceDepth);
             }
         }
     }
