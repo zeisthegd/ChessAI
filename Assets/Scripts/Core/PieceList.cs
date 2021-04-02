@@ -1,3 +1,4 @@
+//Concept: Occupancy. Dùng để hỗ trợ thực hiện các nước đi của Rook, Bishop, Queen.
 public class PieceList
 {
     public int[] occupiedSquares;// Lưu vị trí của các ô bị một loại quân cờ chiếm giữ

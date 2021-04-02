@@ -3,12 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//Front-end của bàn cờ.
 public class BoardUI : MonoBehaviour
 {
     public BoardTheme boardTheme;
     public PieceTheme pieceTheme;
     public bool showLegalMoves;
     public bool whiteIsBottom;
+
+    Move lastMadeMove;
 
     public MeshRenderer[,] squareRenderers;
     public SpriteRenderer[,] squarePieceRenderers;
@@ -34,7 +37,6 @@ public class BoardUI : MonoBehaviour
                 square.parent = transform;
                 square.name = BoardRepresentation.SquareNameFromCoordinate(file, rank);
                 square.position = PositionFromCoord(file, rank, 0);
-                print(square.name);
                 Material squareMaterial = new Material(squareShader);
 
                 squareRenderers[file, rank] = square.gameObject.GetComponent<MeshRenderer>();
@@ -54,14 +56,14 @@ public class BoardUI : MonoBehaviour
 
     public bool TryGetSquareUnderMouse(Vector2 mouseWorldPos, out Coord selectedCoord)
     {
-        int file = (int) (mouseWorldPos.x + 4);
-        int rank = (int) (mouseWorldPos.y + 4);
-        if(!whiteIsBottom)
+        int file = (int)(mouseWorldPos.x + 4);
+        int rank = (int)(mouseWorldPos.y + 4);
+        if (!whiteIsBottom)
         {
             file = 7 - file;
             rank = 7 - rank;
         }
-        selectedCoord = new Coord(file,rank);
+        selectedCoord = new Coord(file, rank);
         return file >= 0 && file < 8 && rank >= 0 && rank < 8;
 
     }
@@ -72,15 +74,34 @@ public class BoardUI : MonoBehaviour
         ResetSquarePositions();
     }
 
+    public void HighlightLegalMoves(Board board, Coord fromSquare)
+    {
+        if(showLegalMoves)
+        {
+            
+        }
+    }
+
     public void SelectSquare(Coord coord)
     {
-        SetSquareColor(coord,boardTheme.lightSquares.selected, boardTheme.darkSquares.selected);
+        SetSquareColor(coord, boardTheme.lightSquares.selected, boardTheme.darkSquares.selected);
     }
 
     public void DragPiece(Coord pieceCoord, Vector2 mousePos)
     {
         //Set vị trí của quân cờ thành vị trí của mouse
-        squarePieceRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = new Vector3(mousePos.x,mousePos.y,pieceDragDepth);
+        squarePieceRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = new Vector3(mousePos.x, mousePos.y, pieceDragDepth);
+    }
+
+    void HighlightMove(Move move)
+    {
+        SetSquareColor(BoardRepresentation.CoordFromIndex(move.StartSquare),
+                boardTheme.lightSquares.moveFromHighlight,
+                    boardTheme.darkSquares.moveFromHighlight);
+
+        SetSquareColor(BoardRepresentation.CoordFromIndex(move.StartSquare),
+                boardTheme.lightSquares.moveFromHighlight,
+                    boardTheme.darkSquares.moveFromHighlight);
     }
 
     public void DeselectSquare(Coord coord)
@@ -97,15 +118,30 @@ public class BoardUI : MonoBehaviour
                 Coord coord = new Coord(file, rank);
                 int piece = board.Squares[BoardRepresentation.IndexFromCoord(coord.fileIndex, coord.rankIndex)];
                 squarePieceRenderers[file, rank].sprite = pieceTheme.GetPieceSprite(piece);
-                squarePieceRenderers[file, rank].transform.position = PositionFromCoord(file,rank,pieceDepth);
+                squarePieceRenderers[file, rank].transform.position = PositionFromCoord(file, rank, pieceDepth);
             }
+        }
+
+    }
+
+    public void OnMoveMade(Board board, Move move, bool animated = false)
+    {
+        lastMadeMove = move;
+        if (animated)
+        {
+
+        }
+        else
+        {
+            UpdatePosition(board);
+            ResetSquareColors();
         }
     }
 
     public void ResetPiecePosition(Coord pieceCoord)
     {
-        Vector3 pos = PositionFromChord(pieceCoord,pieceDepth);
-        squarePieceRenderers[pieceCoord.fileIndex,pieceCoord.rankIndex].transform.position = pos;
+        Vector3 pos = PositionFromChord(pieceCoord, pieceDepth);
+        squarePieceRenderers[pieceCoord.fileIndex, pieceCoord.rankIndex].transform.position = pos;
     }
 
     public void ResetSquareColors()
@@ -119,13 +155,14 @@ public class BoardUI : MonoBehaviour
         }
     }
 
-    void ResetSquarePositions(){
+    void ResetSquarePositions()
+    {
         for (int rank = 0; rank < 8; rank++)
         {
             for (int file = 0; file < 8; file++)
             {
-                squareRenderers[file,rank].transform.position = PositionFromCoord(file,rank,0);
-                squarePieceRenderers[file,rank].transform.position = PositionFromCoord(file,rank,pieceDepth);
+                squareRenderers[file, rank].transform.position = PositionFromCoord(file, rank, 0);
+                squarePieceRenderers[file, rank].transform.position = PositionFromCoord(file, rank, pieceDepth);
             }
         }
     }

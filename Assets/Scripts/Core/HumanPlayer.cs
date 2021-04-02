@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class HumanPlayer : Player
 {
-    public enum InputState{
+    public enum InputState
+    {
         None,
         PieceSelected,
         DraggingPiece
@@ -27,7 +28,7 @@ public class HumanPlayer : Player
 
     public override void NotifyTurnToMove()
     {
-       
+
     }
 
     public override void Update()
@@ -39,54 +40,41 @@ public class HumanPlayer : Player
     {
         Vector2 mousePos = camera.ScreenToWorldPoint(Input.mousePosition);
 
-        if(currentState == InputState.None){
+        if (currentState == InputState.None)
+        {
             HandlePieceSelection(mousePos);
         }
-        else if( currentState == InputState.DraggingPiece){
+        else if (currentState == InputState.DraggingPiece)
+        {
             HandleDragMovement(mousePos);
-            
+
         }
-        else if (currentState == InputState.PieceSelected){
+        else if (currentState == InputState.PieceSelected)
+        {
             HandlePointAndClickMovement(mousePos);
-            
+
         }
 
-        if(Input.GetMouseButtonDown(1)){
+        if (Input.GetMouseButtonDown(1))
+        {
             CancelPieceSelection();
         }
     }
 
-    
+
 
     private void HandleDragMovement(Vector2 mousePos)
     {
         boardUI.DragPiece(selectedPieceSquare, mousePos);
-        if(Input.GetMouseButtonUp(0))
+        if (Input.GetMouseButtonUp(0))
         {
             HandlePiecePlacement(mousePos);
         }
     }
 
-    private void HandlePieceSelection(Vector2 mousePos)
-    {
-        if(Input.GetMouseButtonDown(0))
-        {
-            if(boardUI.TryGetSquareUnderMouse(mousePos,out selectedPieceSquare))
-            {
-                int index = BoardRepresentation.IndexFromCoord(selectedPieceSquare);
-                //Nếu ô này có một quân cờ, chọn quân cờ để kéo đi
-                if(Piece.IsColor(board.Squares[index], board.ColorToMove))//Nếu quân cờ thuộc về phe đi lượt tiếp theo
-                {
-                    boardUI.SelectSquare(selectedPieceSquare);
-                    currentState = InputState.DraggingPiece;
-                }
-            }
-        }
-    }
-
     void HandlePointAndClickMovement(Vector2 mousePos)
     {
-        if(Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0))
         {
             HandlePiecePlacement(mousePos);
         }
@@ -95,28 +83,30 @@ public class HumanPlayer : Player
     void HandlePiecePlacement(Vector2 mousePos)
     {
         Coord targetSquare;
-        if(boardUI.TryGetSquareUnderMouse(mousePos, out targetSquare))//Nếu ô được chọn là một ô trên bàn cờ
+        if (boardUI.TryGetSquareUnderMouse(mousePos, out targetSquare))//Nếu ô được chọn là một ô trên bàn cờ
         {
-            if(targetSquare.Equals(selectedPieceSquare))//Nếu như ô được chọn là ô của quân cờ đang được chọn
+            if (targetSquare.Equals(selectedPieceSquare))//Nếu như ô được chọn là ô của quân cờ đang được chọn
             {
                 boardUI.ResetPiecePosition(selectedPieceSquare);
-                if(currentState == InputState.DraggingPiece)
+                if (currentState == InputState.DraggingPiece)
                     currentState = InputState.PieceSelected;
                 else
                     currentState = InputState.None;
-                    boardUI.DeselectSquare(selectedPieceSquare);
+                boardUI.DeselectSquare(selectedPieceSquare);
             }
             else
             {
-                int targetIndex = BoardRepresentation.IndexFromCoord(targetSquare.fileIndex,targetSquare.rankIndex);
-                if(Piece.IsColor(board.Squares[targetIndex],board.ColorToMove) && board.Squares[targetIndex] != 0)
+                int targetIndex = BoardRepresentation.IndexFromCoord(targetSquare.fileIndex, targetSquare.rankIndex);
+
+                //Nếu như quân cờ bị target cùng màu với phe đang được đi
+                if (Piece.IsColor(board.Squares[targetIndex], board.ColorToMove) && board.Squares[targetIndex] != 0)
                 {
                     CancelPieceSelection();
                     HandlePieceSelection(mousePos);
                 }
                 else
                 {
-                    TryMakeMove(selectedPieceSquare,targetSquare);
+                    TryMakeMove(selectedPieceSquare, targetSquare);
                 }
             }
         }
@@ -126,15 +116,73 @@ public class HumanPlayer : Player
         }
     }
 
+    private void HandlePieceSelection(Vector2 mousePos)
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (boardUI.TryGetSquareUnderMouse(mousePos, out selectedPieceSquare))
+            {
+                int index = BoardRepresentation.IndexFromCoord(selectedPieceSquare);
+                //Nếu ô này có một quân cờ, chọn quân cờ để kéo đi
+                if (Piece.IsColor(board.Squares[index], board.ColorToMove))//Nếu quân cờ thuộc về phe đi lượt tiếp theo
+                {
+                    boardUI.SelectSquare(selectedPieceSquare);
+                    currentState = InputState.DraggingPiece;
+                }
+            }
+        }
+    }
 
-    
+
 
     void TryMakeMove(Coord startSquare, Coord targetSquare)
     {
+
         int startIndex = BoardRepresentation.IndexFromCoord(startSquare);
         int targetIndex = BoardRepresentation.IndexFromCoord(targetSquare);
+        //Debug.Log("Target: " + targetIndex);
         bool moveIsLegal = false;
         Move chosenMove = new Move();
+
+        MoveGenerator moveGenerator = new MoveGenerator();
+        bool wantsKnightPromotion = Input.GetKey(KeyCode.LeftAlt);
+
+        var legalMoves = moveGenerator.GenerateMoves(board);
+
+        for (int i = 0; i < legalMoves.Count; i++)
+        {
+            var legalMove = legalMoves[i];
+            Debug.Log("Checking " + legalMove.StartSquare + " | " + legalMove.TargetSquare);
+            Debug.Log("Index " + startIndex + " | " + targetIndex);
+            if (legalMove.StartSquare == startIndex && legalMove.TargetSquare == targetIndex)
+            {
+                
+                if (legalMove.IsPromotion)
+                {
+                    if (legalMove.MoveFlag == Move.Flag.PromoteToQueen && wantsKnightPromotion)
+                    {
+                        continue;
+                    }
+                    if (legalMove.MoveFlag != Move.Flag.PromoteToQueen && !wantsKnightPromotion)
+                    {
+                        continue;
+                    }
+                }
+                
+                moveIsLegal = true;
+                chosenMove = legalMove;
+            }
+
+        }
+
+
+        if (moveIsLegal)
+        {
+            ChoseMove(chosenMove);
+            currentState = InputState.None;
+        }
+        else
+            CancelPieceSelection();
 
 
 
@@ -142,7 +190,7 @@ public class HumanPlayer : Player
 
     private void CancelPieceSelection()
     {
-        if(currentState != InputState.None)
+        if (currentState != InputState.None)
         {
             currentState = InputState.None;
             boardUI.DeselectSquare(selectedPieceSquare);

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Board : MonoBehaviour
+//Back-end của bàn cờ.
+public class Board
 {
     public const int WhiteIndex = 0;
     public const int BlackIndex = 1;
@@ -33,17 +34,27 @@ public class Board : MonoBehaviour
 
     PieceList[] allPieceLists;
 
+    const uint whiteCastleKingSideMask = 0b1111111111111110;
+    const uint whiteCastleQueenSideMask = 0b1111111111111101;
+    const uint blackCastleKingSideMask = 0b1111111111111011;
+    const uint blackCastleQueenSideMask = 0b1111111111110111;
+
+    const uint whiteCastleMask = whiteCastleKingSideMask & whiteCastleQueenSideMask;
+    const uint blackCastleMask = blackCastleKingSideMask & blackCastleQueenSideMask;
+
 
     PieceList GetPieceList(int pieceType, int colorIndex)
     {
         return allPieceLists[colorIndex * 8 + pieceType];
     }
 
+    //Load thế cờ mặc định
     public void LoadStartPosition()
     {
         LoadPosition(FenUtility.startFen);
     }
 
+    //Load vị trí của thế cờ từ 1 đoạn FEN
     public void LoadPosition(string fen)
     {
         Initialized();
@@ -95,6 +106,145 @@ public class Board : MonoBehaviour
         ColorToMoveIndex = (WhiteToMove) ? WhiteIndex : BlackIndex;
 
     }
+
+
+    //Thực hiện nước đi và update bàn cờ
+    public void MakeMove(Move move, bool inSearch = false)
+    {
+        uint oldEnPassantFile = (currentGameState >> 4) & 15;
+        uint originalCastleState = currentGameState & 15;
+        uint newCastleState = originalCastleState;
+        currentGameState = 0;
+
+        int opponentColorIndex = 1 - ColorToMoveIndex;
+        int moveFrom = move.StartSquare;
+        int moveTo = move.TargetSquare;
+
+
+        int capturedPieceType = Piece.PieceType(Squares[moveTo]);
+        int movePiece = Squares[moveFrom];
+        int movePieceType = Piece.PieceType(movePiece);
+
+        int moveFlag = move.MoveFlag;
+        bool isPromotion = move.IsInvalid;
+        bool isEnpassant = moveFlag == Move.Flag.EnPassantCapture;
+
+
+        //handle captures
+        currentGameState |= (ushort)(capturedPieceType << 8);
+        if (capturedPieceType != 0 && !isEnpassant)
+        {
+            GetPieceList(capturedPieceType, opponentColorIndex).RemovePieceAtSquare(moveTo);
+        }
+
+        //Di chuyển piece trong piece list
+        if (movePieceType == Piece.King)
+        {
+            KingSquare[ColorToMoveIndex] = moveTo;
+            newCastleState &= (WhiteToMove) ? whiteCastleMask : blackCastleMask;
+        }
+        else
+        {
+            Debug.Log("pieceType: " + movePieceType);
+            GetPieceList(movePieceType, ColorToMoveIndex).MovePiece(moveFrom, moveTo);
+        }
+
+        int pieceOnTargetSquare = movePiece;
+
+        if (isPromotion)
+        {
+            int promotionType = 0;
+            switch (moveFlag)
+            {
+                case Move.Flag.PromoteToQueen:
+                    promotionType = Piece.Queen;
+                    queens[ColorToMoveIndex].AddPieceAtSquare(moveTo);
+                    break;
+                case Move.Flag.PromoteToRook:
+                    promotionType = Piece.Rook;
+                    rooks[ColorToMoveIndex].AddPieceAtSquare(moveTo);
+                    break;
+                case Move.Flag.PromoteToBishop:
+                    promotionType = Piece.Bishop;
+                    bishops[ColorToMoveIndex].AddPieceAtSquare(moveTo);
+                    break;
+                case Move.Flag.PromoteToKnight:
+                    promotionType = Piece.Knight;
+                    knights[ColorToMoveIndex].AddPieceAtSquare(moveTo);
+                    break;
+            }
+            pieceOnTargetSquare = promotionType | ColorToMove;
+            pawns[ColorToMoveIndex].RemovePieceAtSquare(moveTo);
+        }
+        else
+        {
+            //Handle other special moves: en passant, castling
+            switch (moveFlag)
+            {
+                case Move.Flag.EnPassantCapture:
+                    int epPawnSquare = moveTo + ((ColorToMove == Piece.White) ? -8 : 8);//Ô "phía sau" quân pawn đã đi nước en passant
+                    currentGameState |= (ushort)(Squares[epPawnSquare] << 8);
+                    Squares[epPawnSquare] = 0;
+                    pawns[ColorToMoveIndex].RemovePieceAtSquare(epPawnSquare);
+
+                    break;
+                case Move.Flag.Castling:
+                    bool kingSide = moveTo == BoardRepresentation.g1 || moveTo == BoardRepresentation.g8;
+                    int castlingRookFromIndex = (kingSide) ? moveTo + 1: moveTo - 2;
+                    int castlingRookToIndex = (kingSide) ? moveTo - 1 : moveTo + 1;
+
+                    Squares[castlingRookFromIndex] = Piece.None;
+                    Squares[castlingRookToIndex] = Piece.Rook | ColorToMove;
+
+                    rooks[ColorToMoveIndex].MovePiece(castlingRookFromIndex,castlingRookToIndex);
+                    break;
+            }
+        }
+
+
+        Squares[moveTo] = pieceOnTargetSquare;
+        Squares[moveFrom] = 0;
+
+        if(moveFlag == Move.Flag.PawnTwoForward)
+        {
+            int file = BoardRepresentation.FileIndex(moveFrom) + 1;
+            currentGameState |= (ushort) (file << 4);
+        }
+
+        //Xét quyền castle của 2 bên
+        if(originalCastleState != 0)
+        {
+            if(moveTo == BoardRepresentation.h1 || moveFrom == BoardRepresentation.h1)
+            {
+                newCastleState &= whiteCastleKingSideMask;
+            }
+            else if(moveTo == BoardRepresentation.a1 || moveFrom == BoardRepresentation.a1)
+            {
+                newCastleState &= whiteCastleQueenSideMask;
+            }
+            if(moveTo == BoardRepresentation.h8 || moveFrom == BoardRepresentation.h8)
+            {
+                newCastleState &= blackCastleKingSideMask;
+            }
+            else if(moveTo == BoardRepresentation.a8 || moveFrom == BoardRepresentation.a8)
+            {
+                newCastleState &= blackCastleQueenSideMask;
+            }
+        }
+
+        currentGameState |= newCastleState;
+        currentGameState |= (uint)fiftyMoveCounter << 14;
+        
+
+        //Change side to move
+        WhiteToMove = !WhiteToMove;
+        ColorToMove = (WhiteToMove) ? Piece.White : Piece.Black;
+        OpponentColor = (WhiteToMove) ? Piece.Black : Piece.White;
+        ColorToMoveIndex = 1 - ColorToMoveIndex;
+        plyCount++;
+        fiftyMoveCounter++;
+    }
+
 
 
     void Initialized()

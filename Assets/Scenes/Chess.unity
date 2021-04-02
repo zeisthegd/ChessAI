@@ -284,7 +284,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boardTheme: {fileID: 11400000, guid: ec623e7b263f91f49820cf8b412f5d5c, type: 2}
   pieceTheme: {fileID: 11400000, guid: 64964e0d08d38dd45bbb1ae7bb8a76bc, type: 2}
-  showLegalMoves: 0
+  showLegalMoves: 1
   whiteIsBottom: 1
 --- !u!4 &1455707696
 Transform:

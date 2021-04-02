@@ -17,10 +17,10 @@ public readonly struct Move
         public const int PromoteToKnight = 4;
         public const int PromoteToRook = 5;
         public const int PromoteToBishop = 6;
-        public const int PawnMoveForward = 7;
+        public const int PawnTwoForward = 7;
     }
 
-    readonly ushort moveValue;
+    readonly ushort moveValue; //Trường chứa thông tin của một nước đi. Từ ô nào, đến ô nào, loại nước đi.
     const ushort startSquareMask = 0b0000000000111111;
     const ushort targetSquareMask = 0b0000111111000000;
     const ushort flagMask = 0b1111000000000000;

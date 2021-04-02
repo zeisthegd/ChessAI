@@ -3,7 +3,9 @@ guid: f1fff9fe38d6077489a313d9f41caae9
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - boardTheme: {fileID: 11400000, guid: ec623e7b263f91f49820cf8b412f5d5c, type: 2}
+  - pieceTheme: {fileID: 11400000, guid: 64964e0d08d38dd45bbb1ae7bb8a76bc, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
