@@ -12,6 +12,7 @@ public class BoardUI : MonoBehaviour
     public bool whiteIsBottom;
 
     Move lastMadeMove;
+    MoveGenerator moveGenerator;
 
     public MeshRenderer[,] squareRenderers;
     public SpriteRenderer[,] squarePieceRenderers;
@@ -20,6 +21,7 @@ public class BoardUI : MonoBehaviour
 
     void Awake()
     {
+        moveGenerator = new MoveGenerator();
         CreateBoardUI();
     }
 
@@ -78,7 +80,16 @@ public class BoardUI : MonoBehaviour
     {
         if(showLegalMoves)
         {
-            
+            var moves = moveGenerator.GenerateMoves(board);
+            for (int i = 0; i < moves.Count; i++)
+            {
+                Move move = moves[i];
+                if (move.StartSquare == BoardRepresentation.IndexFromCoord(fromSquare))
+                {
+                    Coord coord = BoardRepresentation.CoordFromIndex(move.TargetSquare);
+                    SetSquareColor(coord, boardTheme.lightSquares.legal, boardTheme.darkSquares.legal);
+                }
+            }
         }
     }
 

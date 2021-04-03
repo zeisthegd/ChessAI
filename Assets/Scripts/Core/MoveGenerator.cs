@@ -14,7 +14,7 @@ public class MoveGenerator
     bool isWhiteToMove;
     int friendlyColor;
     int opponentColor;
-    int friendlyKingSquare;
+    int friendlyKingSquare;//ô hiện tại mà vua đồng minh đang chiếm
     int friendlyColorIndex;
     int opponentColorIndex;
     bool inCheck;
@@ -75,20 +75,68 @@ public class MoveGenerator
 
     void GenerateKingMoves()
     {
+        for(int i = 0; i<kingMoves[friendlyKingSquare].Length; i++)
+        {
+            int targetSquare = kingMoves[friendlyKingSquare][i];
+            int pieceOnTargetSquare = board.Squares[targetSquare];
 
+            //Skip những ô friendly
+            if(Piece.IsColor(pieceOnTargetSquare, friendlyColor)){
+                continue;
+            }
+
+            bool isCapture = Piece.IsColor(pieceOnTargetSquare,opponentColor);
+            if(!isCapture)
+            {
+                if(!genQuiets || SquareIsInCheckRay(targetSquare))
+                {
+                    continue;
+                }
+            }
+
+            if(!SquareIsAttacked(targetSquare))
+            {
+                moves.Add(new Move(friendlyKingSquare, targetSquare));
+
+                //Castling
+                if(!inCheck && !isCapture)
+                {
+                    //Castle kingside
+                    if((targetSquare == f1 || targetSquare == f8) && HasKingSideCastleRight)
+                    {
+                        int castleKingSideSquare = targetSquare + 1;
+                        if(board.Squares[castleKingSideSquare] == Piece.None)
+                        {
+                            if(!SquareIsAttacked(castleKingSideSquare))
+                            {
+                                moves.Add(new Move(friendlyKingSquare, castleKingSideSquare,Move.Flag.Castling));
+                            }
+                        }
+                    }
+
+                    if((targetSquare == d1))
+                }
+            }
+        }
     }
 
     void GeneratePawnMoves()
     {
         PieceList myPawns = board.pawns[friendlyColorIndex];
+        //Offset để tính nước đi tới 1 ô của pawn
         int pawnOffset = (friendlyColor == Piece.White) ? 8 : -8;
+        //Rank bắt đầu của 1 trong 2 quân trắng/đen
         int startRank = (board.WhiteToMove) ? 1 : 6;
+        //Rank trước rank promotion
         int finalRankBeforePromotion = (board.WhiteToMove) ? 6 : 1;
 
-        int enPassantFile = ((int)(board.currentGameState >> 4) % 15) - 1;
+        //File của ô có thể bị en passant
+        int enPassantFile = ((int)(board.currentGameState >> 4) & 15) - 1;
         int enPassantSquare = -1;
+        //Debug.Log("EP File: "+enPassantFile);
         if (enPassantFile != -1)
         {
+            //Index của pawn sau khi đi nước en passant
             enPassantSquare = 8 * ((board.WhiteToMove) ? 5 : 2) + enPassantFile;
         }
 
@@ -101,15 +149,17 @@ public class MoveGenerator
             if (genQuiets)
             {
                 int squareOneStepForward = startSquare + pawnOffset;
+                //Nếu ô phía trước không có quân nào
                 if (board.Squares[squareOneStepForward] == Piece.None)
                 {
+                    //Nếu pawn không bị pin hoặc đang di chuyển theo huong
                     if (!IsPinned(startSquare) || IsMovingAlongRay(pawnOffset, startSquare, friendlyKingSquare))
                     {
                         if (!inCheck || SquareIsInCheckRay(squareOneStepForward))
                         {
-                            if (oneStepPromotion)
+                            if (oneStepPromotion)//Nếu là nước promotion
                             {
-
+                                MakePromotionMoves(startRank, squareOneStepForward);
                             }
                             else
                             {
@@ -125,7 +175,7 @@ public class MoveGenerator
                             {
                                 if (!inCheck || SquareIsInCheckRay(squareTwoForward))
                                 {
-                                    moves.Add(new Move(startSquare, squareTwoForward));
+                                    moves.Add(new Move(startSquare, squareTwoForward, Move.Flag.PawnTwoForward));
                                 }
                             }
                         }
@@ -133,13 +183,13 @@ public class MoveGenerator
                 }
             }
 
-            //captures
+            //Captures
             for (int j = 0; j < 2; j++)
             {
-                //Check if square exist diagonal to pawn
-                if (numSquaresToEdge[startRank][pawnAttackDirections[friendlyColorIndex][j]] > 0)
+                //Nếu hướng chéo của pawn là ô thuộc bàn cờ
+                if (numSquaresToEdge[startSquare][pawnAttackDirections[friendlyColorIndex][j]] > 0)
                 {
-
+                    
                     int pawnCaptureDir = directionOffsets[pawnAttackDirections[friendlyColorIndex][j]];
                     int targetSquare = startSquare + pawnCaptureDir;
                     int targetPiece = board.Squares[targetSquare];
@@ -158,19 +208,26 @@ public class MoveGenerator
                         }
                         if (oneStepPromotion)
                         {
-
+                            MakePromotionMoves(startSquare, targetSquare);
+                            
                         }
                         else
                         {
+                            
                             moves.Add(new Move(startSquare, targetSquare));
                         }
                     }
 
+                    //Debug.Log("En passant: " + enPassantSquare + "Target: " + targetSquare);
                     //En passant capture
                     if (targetSquare == enPassantSquare)
                     {
+                        
                         int epCapturedPawnSquare = targetSquare + ((board.WhiteToMove) ? -8 : 8);
-                        if (!InCheckAf)
+                        if (!InCheckAfterPassant(startSquare, targetSquare, epCapturedPawnSquare))
+                        {                   
+                            moves.Add(new Move(startSquare, targetSquare, Move.Flag.EnPassantCapture));
+                        }
                     }
 
                 }
@@ -182,7 +239,31 @@ public class MoveGenerator
 
     void GenerateKnightMoves()
     {
-
+        //Danh sách các ô mà knight của đồng minh đang chiếm giữ
+        PieceList myKnights = board.knights[friendlyColorIndex];
+        //Lặp danh sách
+        for (int i = 0; i < myKnights.Count; i++)
+        {
+            int startSquare = myKnights[i];
+            //Nếu knight ở ô này đang bị pin thì nó không được di chuyển
+            if(IsPinned(startSquare))
+                continue;
+            //Xét lần lượt các ô mà 1 knight có thể tấn công.
+            for(int knightMoveIndex = 0; knightMoveIndex < knightMoves[startSquare].Length; knightMoveIndex++)
+            {
+                int targetSquare = knightMoves[startSquare][knightMoveIndex];
+                int targetSquarePiece = board.Squares[targetSquare];
+                bool isCapture =Piece.IsColor(targetSquarePiece, opponentColor);
+                if(genQuiets || isCapture)
+                {
+                    if(Piece.IsColor(targetSquarePiece,friendlyColor) || (inCheck && !SquareIsInCheckRay(targetSquare)))
+                    {
+                        continue;
+                    }
+                    moves.Add(new Move(startSquare, targetSquare));
+                }
+            }
+        }
     }
 
     void GenerateSlidingPieceMoves()
@@ -314,7 +395,7 @@ public class MoveGenerator
 
         int enemyKingSquare = board.KingSquare[opponentColorIndex];
         opponentAttackNoPawns = opponentSlidingAttackMap | opponentKnightAttacks | kingAttackBitBoards[enemyKingSquare];
-        opponentAttackMap = opponentAttackMap | opponentAttackNoPawns;
+        opponentAttackMap = opponentPawnAttackMap | opponentAttackNoPawns;
 
     }
 
@@ -353,7 +434,6 @@ public class MoveGenerator
             for (int n = 0; n < numSquaresToEdge[startSquare][directionIndex]; n++)
             {
                 int targetSquare = startSquare + currentDirOffset * (n + 1);
-                Debug.Log(targetSquare);
                 int targetSquarePiece = board.Squares[targetSquare];
                 opponentSlidingAttackMap |= 1ul << targetSquare;
                 if (targetSquare != friendlyKingSquare)
@@ -364,6 +444,26 @@ public class MoveGenerator
                     }
                 }
             }
+        }
+    }
+
+    bool SquareIsAttacked(int square)
+    {
+        return BitBoardUtility.ContainsSquare(opponentAttackMap, square);
+    }
+
+    void MakePromotionMoves(int fromSquare, int toSquare)
+    {
+        moves.Add(new Move(fromSquare, toSquare, Move.Flag.PromoteToQueen));
+        if (promotionToGenerate == PromotionMode.All)
+        {
+            moves.Add(new Move(fromSquare, toSquare, Move.Flag.PromoteToBishop));
+            moves.Add(new Move(fromSquare, toSquare, Move.Flag.PromoteToRook));
+            moves.Add(new Move(fromSquare, toSquare, Move.Flag.PromoteToKnight));
+        }
+        else
+        {
+            moves.Add(new Move(fromSquare, toSquare, Move.Flag.PromoteToKnight));
         }
     }
 
@@ -407,7 +507,15 @@ public class MoveGenerator
         board.Squares[epCapturedPawnSquare] = Piece.None;
 
         bool inCheckAfterEpCap = false;
-        if (SquareAttackedAter)
+        if (SquareAttackAfterEPCapture(epCapturedPawnSquare, startSquare))
+        {
+            inCheckAfterEpCap = true;
+        }
+
+        board.Squares[targetSquare] = Piece.None;
+        board.Squares[startSquare] = Piece.Pawn | friendlyColor;
+        board.Squares[epCapturedPawnSquare] = Piece.Pawn | opponentColor;
+        return inCheckAfterEpCap;
     }
 
     bool SquareAttackAfterEPCapture(int epCaptureSquare, int capturingStartSquare)
@@ -417,16 +525,48 @@ public class MoveGenerator
             return true;
         }
 
-        int dirIndex = (epCaptureSquare < friendlyKingSquare) ? 2 : 3;
+        //Chạy ngang theo hướng của ô en passant đê tìm xem có ô nào có thể tấn công king hay không
+        int dirIndex = (epCaptureSquare < friendlyKingSquare) ? 2 : 3;//W or E
         for (int i = 0; i < numSquaresToEdge[friendlyKingSquare][dirIndex]; i++)
         {
             int squareIndex = friendlyKingSquare + directionOffsets[dirIndex] * (i + 1);
             int piece = board.Squares[squareIndex];
-            if(piece != Piece.None)
+            if (piece != Piece.None)//Nếu có 1 quân cờ ở hướng này
             {
-                
+                if (Piece.IsColor(piece, friendlyColor))//Nếu là quân đồng minh
+                {
+                    break;
+                }
+                else
+                {
+                    if (Piece.IsRookOrQueen(piece))
+                    {//Nếu là rook or queen
+                        return true;
+                    }
+                    else
+                    {//Nếu không phải thì king không thể bị check nếu quân pawn hiện tại đi en passant
+                        break;
+                    }
+                }
             }
         }
+
+        for (int i = 0; i < 2; i++)
+        {
+
+            if (numSquaresToEdge[friendlyKingSquare][pawnAttackDirections[friendlyColorIndex][i]] > 0)
+            {
+                int piece = board.Squares[friendlyKingSquare + directionOffsets[pawnAttackDirections[friendlyColorIndex][i]]];
+                if (piece == (Piece.Pawn | opponentColor))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+
+
     }
 
 

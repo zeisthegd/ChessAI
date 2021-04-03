@@ -9,6 +9,7 @@ public static class PrecomputedData
     public static readonly int[][] numSquaresToEdge;
 
     public static readonly byte[][] knightMoves;
+    //Ex: kingMoves[0][1] == 1: king ở á có thể đi tới a2
     public static readonly byte[][] kingMoves;
 
     public static readonly byte[][] pawnAttackDirections =
@@ -93,11 +94,14 @@ public static class PrecomputedData
             ulong knightBitBoard = 0;
             foreach (int knightJumpDelta in allKnightJumps)
             {
+                //Những ô knight có thể nhảy tới
                 int knightJumpToSquare = squareIndex + knightJumpDelta;
+                //Nếu ô này nằm trong bàn cờ
                 if (knightJumpToSquare >= 0 && knightJumpToSquare < 64)
                 {
                     int knightJumpToSquareRank = knightJumpToSquare / 8;
                     int knightJumpToSquareFile = knightJumpToSquare - knightJumpToSquareRank * 8;
+
 
                     int maxCoordMoveDst = System.Math.Max(System.Math.Abs(rank - knightJumpToSquareRank), System.Math.Abs(file - knightJumpToSquareFile));
                     if (maxCoordMoveDst == 2)

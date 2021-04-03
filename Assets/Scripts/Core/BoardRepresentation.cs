@@ -25,12 +25,12 @@ public static class BoardRepresentation
     public const int g8 = 62;
     public const int h8 = 63;
 
-    public static int FileIndex(int squareIndex)
+    public static int RankIndex(int squareIndex)
     {
         return squareIndex >> 3;
     }
 
-    public static int RankIndex(int squareIndex)
+    public static int FileIndex(int squareIndex)
     {
         return squareIndex & 0b000111;
     }

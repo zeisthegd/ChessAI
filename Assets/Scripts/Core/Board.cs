@@ -19,10 +19,14 @@ public class Board
     public int ColorToMoveIndex;
 
 
+    // Bits 0-3 store white and black kingside/queenside castling legality
+	// Bits 4-7 store file of ep square (starting at 1, so 0 = no ep square)
+	// Bits 8-13 captured piece
+	// Bits 14-... fifty mover counter
     public uint currentGameState;
 
-    public int plyCount;
-    public int fiftyMoveCounter;
+    public int plyCount;//Tổng ply của ván cờ
+    public int fiftyMoveCounter;//Tổng ply kể từ lần cuối cùng 1 quân pawn di chuyển hay bị captured
 
     public int[] KingSquare;//Vị trí của white&black kings
 
@@ -58,13 +62,16 @@ public class Board
     public void LoadPosition(string fen)
     {
         Initialized();
+        //Load position info từ FEN
         var loadedPositionInfo = FenUtility.PositionFromFen(fen);
 
+        //Lặp qua các ô trên bàn cờ
         for (int squareIndex = 0; squareIndex < 64; squareIndex++)
         {
-            int piece = loadedPositionInfo.squares[squareIndex];//code
+            int piece = loadedPositionInfo.squares[squareIndex];//Code của một quân cờ
             Squares[squareIndex] = piece;
 
+            
             if (piece != Piece.None)
             {
                 int pieceType = Piece.PieceType(piece);
@@ -145,7 +152,6 @@ public class Board
         }
         else
         {
-            Debug.Log("pieceType: " + movePieceType);
             GetPieceList(movePieceType, ColorToMoveIndex).MovePiece(moveFrom, moveTo);
         }
 

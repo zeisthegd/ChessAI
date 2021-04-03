@@ -126,6 +126,7 @@ public class HumanPlayer : Player
                 //Nếu ô này có một quân cờ, chọn quân cờ để kéo đi
                 if (Piece.IsColor(board.Squares[index], board.ColorToMove))//Nếu quân cờ thuộc về phe đi lượt tiếp theo
                 {
+                    boardUI.HighlightLegalMoves(board, selectedPieceSquare);
                     boardUI.SelectSquare(selectedPieceSquare);
                     currentState = InputState.DraggingPiece;
                 }
@@ -152,11 +153,11 @@ public class HumanPlayer : Player
         for (int i = 0; i < legalMoves.Count; i++)
         {
             var legalMove = legalMoves[i];
-            Debug.Log("Checking " + legalMove.StartSquare + " | " + legalMove.TargetSquare);
-            Debug.Log("Index " + startIndex + " | " + targetIndex);
+            //Debug.Log("Checking " + legalMove.StartSquare + " | " + legalMove.TargetSquare);
+            //Debug.Log("Index " + startIndex + " | " + targetIndex);
             if (legalMove.StartSquare == startIndex && legalMove.TargetSquare == targetIndex)
             {
-                
+
                 if (legalMove.IsPromotion)
                 {
                     if (legalMove.MoveFlag == Move.Flag.PromoteToQueen && wantsKnightPromotion)
@@ -168,9 +169,10 @@ public class HumanPlayer : Player
                         continue;
                     }
                 }
-                
+
                 moveIsLegal = true;
                 chosenMove = legalMove;
+                break;
             }
 
         }
