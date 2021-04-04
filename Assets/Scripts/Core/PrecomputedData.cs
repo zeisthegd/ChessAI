@@ -127,7 +127,7 @@ public static class PrecomputedData
                     int maxCoordMoveDst = System.Math.Max(System.Math.Abs(rank - kingMoveToSquareRank), System.Math.Abs(file - kingMoveToSquareFile));
                     if (maxCoordMoveDst == 1)
                     {
-                        legalKnightJumps.Add((byte)kingMoveToSquare);
+                        legalKingMoves.Add((byte)kingMoveToSquare);
                         kingAttackBitBoards[squareIndex] |= 1ul << kingMoveToSquare;
                     }
                 }

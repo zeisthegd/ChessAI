@@ -45,7 +45,7 @@ public class MoveGenerator
             return moves;
         }
 
-        GenerateSlidingPieceMoves();
+        GenerateSlidingMoves();
         GenerateKnightMoves();
         GeneratePawnMoves();
         return moves;
@@ -75,46 +75,57 @@ public class MoveGenerator
 
     void GenerateKingMoves()
     {
-        for(int i = 0; i<kingMoves[friendlyKingSquare].Length; i++)
+        for (int i = 0; i < kingMoves[friendlyKingSquare].Length; i++)
         {
             int targetSquare = kingMoves[friendlyKingSquare][i];
             int pieceOnTargetSquare = board.Squares[targetSquare];
-
             //Skip những ô friendly
-            if(Piece.IsColor(pieceOnTargetSquare, friendlyColor)){
+            if (Piece.IsColor(pieceOnTargetSquare, friendlyColor))
+            {
                 continue;
             }
 
-            bool isCapture = Piece.IsColor(pieceOnTargetSquare,opponentColor);
-            if(!isCapture)
+            bool isCapture = Piece.IsColor(pieceOnTargetSquare, opponentColor);
+            if (!isCapture)
             {
-                if(!genQuiets || SquareIsInCheckRay(targetSquare))
+                if (!genQuiets || SquareIsInCheckRay(targetSquare))
                 {
                     continue;
                 }
             }
 
-            if(!SquareIsAttacked(targetSquare))
+            if (!SquareIsAttacked(targetSquare))
             {
+
                 moves.Add(new Move(friendlyKingSquare, targetSquare));
 
                 //Castling
-                if(!inCheck && !isCapture)
+                if (!inCheck && !isCapture)
                 {
                     //Castle kingside
-                    if((targetSquare == f1 || targetSquare == f8) && HasKingSideCastleRight)
+                    if ((targetSquare == f1 || targetSquare == f8) && HasKingSideCastleRight)
                     {
                         int castleKingSideSquare = targetSquare + 1;
-                        if(board.Squares[castleKingSideSquare] == Piece.None)
+                        if (board.Squares[castleKingSideSquare] == Piece.None)
                         {
-                            if(!SquareIsAttacked(castleKingSideSquare))
+                            if (!SquareIsAttacked(castleKingSideSquare))
                             {
-                                moves.Add(new Move(friendlyKingSquare, castleKingSideSquare,Move.Flag.Castling));
+                                moves.Add(new Move(friendlyKingSquare, castleKingSideSquare, Move.Flag.Castling));
                             }
                         }
                     }
 
-                    if((targetSquare == d1))
+                    else if ((targetSquare == d1 || targetSquare == d8) && HasQueenSideCastleRight)
+                    {
+                        int castleQueenSideSquare = targetSquare - 1;
+                        if (board.Squares[castleQueenSideSquare] == Piece.None)
+                        {
+                            if (!SquareIsAttacked(castleQueenSideSquare))
+                            {
+                                moves.Add(new Move(friendlyKingSquare, castleQueenSideSquare, Move.Flag.Castling));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -189,7 +200,7 @@ public class MoveGenerator
                 //Nếu hướng chéo của pawn là ô thuộc bàn cờ
                 if (numSquaresToEdge[startSquare][pawnAttackDirections[friendlyColorIndex][j]] > 0)
                 {
-                    
+
                     int pawnCaptureDir = directionOffsets[pawnAttackDirections[friendlyColorIndex][j]];
                     int targetSquare = startSquare + pawnCaptureDir;
                     int targetPiece = board.Squares[targetSquare];
@@ -209,11 +220,11 @@ public class MoveGenerator
                         if (oneStepPromotion)
                         {
                             MakePromotionMoves(startSquare, targetSquare);
-                            
+
                         }
                         else
                         {
-                            
+
                             moves.Add(new Move(startSquare, targetSquare));
                         }
                     }
@@ -222,10 +233,10 @@ public class MoveGenerator
                     //En passant capture
                     if (targetSquare == enPassantSquare)
                     {
-                        
+
                         int epCapturedPawnSquare = targetSquare + ((board.WhiteToMove) ? -8 : 8);
                         if (!InCheckAfterPassant(startSquare, targetSquare, epCapturedPawnSquare))
-                        {                   
+                        {
                             moves.Add(new Move(startSquare, targetSquare, Move.Flag.EnPassantCapture));
                         }
                     }
@@ -246,17 +257,17 @@ public class MoveGenerator
         {
             int startSquare = myKnights[i];
             //Nếu knight ở ô này đang bị pin thì nó không được di chuyển
-            if(IsPinned(startSquare))
+            if (IsPinned(startSquare))
                 continue;
             //Xét lần lượt các ô mà 1 knight có thể tấn công.
-            for(int knightMoveIndex = 0; knightMoveIndex < knightMoves[startSquare].Length; knightMoveIndex++)
+            for (int knightMoveIndex = 0; knightMoveIndex < knightMoves[startSquare].Length; knightMoveIndex++)
             {
                 int targetSquare = knightMoves[startSquare][knightMoveIndex];
                 int targetSquarePiece = board.Squares[targetSquare];
-                bool isCapture =Piece.IsColor(targetSquarePiece, opponentColor);
-                if(genQuiets || isCapture)
+                bool isCapture = Piece.IsColor(targetSquarePiece, opponentColor);
+                if (genQuiets || isCapture)
                 {
-                    if(Piece.IsColor(targetSquarePiece,friendlyColor) || (inCheck && !SquareIsInCheckRay(targetSquare)))
+                    if (Piece.IsColor(targetSquarePiece, friendlyColor) || (inCheck && !SquareIsInCheckRay(targetSquare)))
                     {
                         continue;
                     }
@@ -266,8 +277,74 @@ public class MoveGenerator
         }
     }
 
-    void GenerateSlidingPieceMoves()
+    void GenerateSlidingMoves()
     {
+        PieceList rookMoves = board.rooks[friendlyColorIndex];
+        for (int i = 0; i < rookMoves.Count; i++)
+        {
+            GenerateSlidingPieceMoves(rookMoves[i], 0 ,4);
+        }
+        PieceList bishopMoves = board.bishops[friendlyColorIndex];
+        for (int i = 0; i < bishopMoves.Count; i++)
+        {
+            GenerateSlidingPieceMoves(bishopMoves[i], 4 ,8);
+        }
+        PieceList queenMoves = board.queens[friendlyColorIndex];
+        for (int i = 0; i < queenMoves.Count; i++)
+        {
+            GenerateSlidingPieceMoves(queenMoves[i], 0 ,8);
+        }
+
+    }
+    void GenerateSlidingPieceMoves(int startSquare, int startDirIndex, int endDirIndex)
+    {
+        bool isPinned = IsPinned(startSquare);
+
+        //Nếu quân này đang bị pinned và king đang bị check thì quân này không thể di chuyển
+        if (inCheck && isPinned)
+        {
+            return;
+        }
+
+        for (int directionIndex = startDirIndex; directionIndex < endDirIndex; directionIndex++)
+        {
+            int currentDirOffset = directionOffsets[directionIndex];
+
+            if (isPinned && !IsMovingAlongRay(currentDirOffset, friendlyKingSquare, startSquare))
+            {
+                continue;
+            }
+
+            for (int n = 0; n < numSquaresToEdge[startSquare][directionIndex]; n++)
+            {
+                int targetSquare = startSquare + currentDirOffset * (n + 1);
+                int targetSquarePiece = board.Squares[targetSquare];
+
+                //Nếu bị chặn bởi quân đồng minh
+                if (Piece.IsColor(targetSquarePiece, friendlyColor))
+                {
+                    break;
+                }
+                bool isCapture = targetSquarePiece != Piece.None;
+
+                bool movePreventsCheck = SquareIsInCheckRay(targetSquare);
+                if (movePreventsCheck || !inCheck)
+                {
+                    if (genQuiets || isCapture)
+                    {
+                        moves.Add(new Move(startSquare, targetSquare));
+                    }
+                }
+
+                //Nếu square target có quân nào đó thì không thể đi tiếp
+                //Hoặc nếu nước đi này ngăn chặn một nước check thì những nước sau nó không thể chặn check
+                if (isCapture || movePreventsCheck)
+                    break;
+
+            }
+
+        }
+
 
     }
 

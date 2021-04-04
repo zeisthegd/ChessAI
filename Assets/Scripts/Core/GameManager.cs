@@ -22,16 +22,12 @@ public class GameManager : MonoBehaviour
     Player playerToMove;
     public Color[] colors;
 
-    //Clock
-
+    //
 
     Result gameResult;
 
     BoardUI boardUI;
     List<Move> gameMoves;
-
-
-
 
     public Board board { get; private set; }
     Board searchBoard; // Duplicate version of board used for ai search
@@ -43,7 +39,7 @@ public class GameManager : MonoBehaviour
         board = new Board();
         searchBoard = new Board();
 
-        NewGame(whitePlayerType,blackPlayerType);
+        NewGame(whitePlayerType, blackPlayerType);
     }
 
     void Update()
@@ -95,12 +91,13 @@ public class GameManager : MonoBehaviour
 
         gameMoves.Add(move);
         onMoveMade?.Invoke(move);
-        boardUI.OnMoveMade(board,move,animatedMove);
+        boardUI.OnMoveMade(board, move, animatedMove);
         NotifyPlayerToMove();
     }
 
     void NotifyPlayerToMove()
     {
+        gameResult = GetGameState();
         if (gameResult == Result.Playing)
         {
             playerToMove = (board.WhiteToMove) ? whitePlayer : blackPlayer;
@@ -108,8 +105,47 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Game Over");
+            Debug.Log ("Game Over: " + gameResult);
         }
+    }
+
+    Result GetGameState()
+    {
+        MoveGenerator moveGen = new MoveGenerator();
+        var moves = moveGen.GenerateMoves(board);
+
+        //Mate/Stalemate
+        if (moves.Count == 0)
+        {
+            if (moveGen.InCheck)
+            {
+                return (board.WhiteToMove) ? Result.WhiteIsMated : Result.BlackIsMated;
+            }
+            return Result.Stalemate;
+        }
+
+        //Fifty-move rule
+        if (board.fiftyMoveCounter >= 50)
+        {
+            return Result.FiftyRuleMove;
+        }
+
+        //
+        int numPawns = board.pawns[Board.WhiteIndex].Count + board.pawns[Board.BlackIndex].Count;
+        int numRooks = board.rooks[Board.WhiteIndex].Count + board.rooks[Board.BlackIndex].Count;
+        int numBishops = board.bishops[Board.WhiteIndex].Count + board.bishops[Board.BlackIndex].Count;
+        int numKnights = board.knights[Board.WhiteIndex].Count + board.knights[Board.BlackIndex].Count;
+        int numQueens = board.queens[Board.WhiteIndex].Count + board.queens[Board.BlackIndex].Count;
+
+        if(numPawns + numRooks + numQueens == 0)
+        {
+            if(numKnights == 1 || numBishops == 1)
+            {
+                return Result.InsufficientMaterial;
+            }
+        }
+
+        return Result.Playing;
     }
 
 
