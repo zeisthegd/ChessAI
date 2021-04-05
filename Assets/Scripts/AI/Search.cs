@@ -27,6 +27,7 @@ public class Search
     Board board;
     Evaluation evaluation;
 
+
     public SearchDiagnostics searchDiagnostics;
     int numNodes;
     int numQNodes;
@@ -47,6 +48,24 @@ public class Search
     public void StartSearch()
     {
         InitDebugInfo();
+
+        //Khởi tạo search
+        bestEvalThisIteration = bestEval = 0;
+        bestMoveThisIteration = bestMove = Move.InvalidMove;
+
+        moveGenerator.promotionToGenerate = settings.promotionsToSearch;
+        currentIterativeSearchDepth = 0;
+        abortSearch = false;
+        searchDiagnostics = new SearchDiagnostics();
+
+        SearchMoves(settings.depth,0,negativeInfinity,positiveInfinity);
+        bestMove = bestMoveThisIteration;
+        bestEval = bestEvalThisIteration;
+
+        onSearchComplete?.Invoke(bestMove);
+
+        LogDebugInfo();
+
     }
 
 
@@ -68,7 +87,7 @@ public class Search
 
 
             alpha = Math.Max(alpha, -immediateMateScore + plyFromRoot);
-            beta = Math.Min(beta, immediateMateScore * plyFromRoot);
+            beta = Math.Min(beta, immediateMateScore - plyFromRoot);
             if (alpha >= beta)
             {
                 return alpha;
@@ -79,9 +98,56 @@ public class Search
         if (depth == 0)
         {
             int evaluation = QuiescenceSearch(alpha, beta);
+            return evaluation;
         }
 
-        return 1;
+        List<Move> moves = moveGenerator.GenerateMoves(board);
+
+        if (moves.Count == 0)
+        {
+            if (moveGenerator.InCheck)
+            {
+                int mateScore = immediateMateScore - plyFromRoot;
+                return -mateScore;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        Move bestMoveInThisPosition = invalidMove;
+
+        for (int i = 0; i < moves.Count; i++)
+        {
+            board.MakeMove(moves[i], inSearch: true);
+            int eval = -SearchMoves(depth - 1, plyFromRoot + 1, -beta, -alpha);
+            board.UnmakeMove(moves[i], inSearch: true);
+            numNodes++;
+
+            //Nước đi tìm được quá "tốt" nên đối phương sẽ không để nó xảy ra
+            //Vì vậy sẽ chọn một nước đi đã tìm được trước đó. Bỏ qua những nước đi còn lại
+            if (eval >= beta)
+            {
+                numCutoffs++;
+                return beta;
+            }
+
+            //Tìm thấy nước đi tốt hơn ở thế cờ này
+            if (eval > alpha)
+            {
+                bestMoveInThisPosition = moves[i];
+
+                alpha = eval;
+                if (plyFromRoot == 0)
+                {
+                    bestMoveThisIteration = moves[i];
+                    bestEvalThisIteration = eval;
+                }
+            }
+        }
+
+        return alpha;
     }
 
 
@@ -103,9 +169,9 @@ public class Search
 
         for (int i = 0; i < moves.Count; i++)
         {
-            board.MakeMove(moves[i], false);
-            eval = -QuiescenceSearch(alpha, beta);
-            board.UnmakeMove(moves[i], false);
+            board.MakeMove(moves[i], true);
+            eval = -QuiescenceSearch(-alpha, -beta);
+            board.UnmakeMove(moves[i], true);
             numQNodes++;
 
             if (eval >= beta)

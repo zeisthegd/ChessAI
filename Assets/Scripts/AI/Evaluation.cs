@@ -22,6 +22,10 @@ public class Evaluation
         int whiteMaterial = CountMaterial(Board.WhiteIndex);
         int blackMaterial = CountMaterial(Board.BlackIndex);
 
+        int whiteMaterialWithoutPawns = whiteEval - board.pawns[Board.WhiteIndex].Count * pawnValue;
+        int blackMaterialWithoutPawns = blackEval - board.pawns[Board.BlackIndex].Count * pawnValue;
+
+
         whiteEval += whiteMaterial;
         blackEval += blackMaterial;
 

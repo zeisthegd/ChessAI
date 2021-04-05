@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
 
     public PlayerType blackPlayerType;
     public PlayerType whitePlayerType;
+    public AISettings aiSettings;
 
     Player whitePlayer;
     Player blackPlayer;
@@ -55,10 +56,12 @@ public class GameManager : MonoBehaviour
         if (loadCustomPosition)
         {
             board.LoadPosition(customPosition);
+            searchBoard.LoadPosition(customPosition);
         }
         else
         {
             board.LoadStartPosition();
+            searchBoard.LoadStartPosition();
         }
 
         onPositionLoaded?.Invoke();
@@ -78,6 +81,10 @@ public class GameManager : MonoBehaviour
 
         if (playerType == PlayerType.Human)
             player = new HumanPlayer(board);
+        else
+        {
+            player = new AIPlayer(searchBoard,aiSettings);
+        }
 
         player.onMoveChosen += OnMoveChosen;
     }

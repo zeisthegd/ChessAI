@@ -22,7 +22,7 @@ public class AISettings : ScriptableObject {
     public int maxBookPly = 10;
 
     public MoveGenerator.PromotionMode promotionsToSearch;
-    //public Search
+    public Search.SearchDiagnostics diagnostics;
 
     public void RequestAbortSearch()
     {

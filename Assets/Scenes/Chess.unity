@@ -166,9 +166,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   customPosition: 1rbq1r1k/2pp2pp/p1n3p1/2b1p3/R3P3/1BP2N2/1P3PPP/1NBQ1RK1 w - -
     0 1
-  loadCustomPosition: 0
-  blackPlayerType: 0
-  whitePlayerType: 0
+  loadCustomPosition: 1
+  blackPlayerType: 1
+  whitePlayerType: 1
+  aiSettings: {fileID: 11400000, guid: 5fec86c336001fe4398912eb13761488, type: 2}
   colors: []
 --- !u!1 &519420028
 GameObject:

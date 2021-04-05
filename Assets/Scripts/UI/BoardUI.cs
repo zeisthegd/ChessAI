@@ -78,7 +78,7 @@ public class BoardUI : MonoBehaviour
 
     public void HighlightLegalMoves(Board board, Coord fromSquare)
     {
-        if(showLegalMoves)
+        if (showLegalMoves)
         {
             var moves = moveGenerator.GenerateMoves(board);
             for (int i = 0; i < moves.Count; i++)
@@ -140,13 +140,37 @@ public class BoardUI : MonoBehaviour
         lastMadeMove = move;
         if (animated)
         {
-
+            StartCoroutine(AnimateMove(move, board));
         }
         else
         {
             UpdatePosition(board);
             ResetSquareColors();
         }
+    }
+
+    IEnumerator AnimateMove(Move move, Board board)
+    {
+        float t = 0;
+        const float moveAnimDuration = 0.15f;
+        Coord startCoord = BoardRepresentation.CoordFromIndex(move.StartSquare);
+        Coord targetCoord = BoardRepresentation.CoordFromIndex(move.TargetSquare);
+        Transform pieceT = squarePieceRenderers[startCoord.fileIndex, startCoord.rankIndex].transform;
+        Vector3 startPos = PositionFromChord(startCoord);
+        Vector3 targetPos = PositionFromChord(targetCoord);
+        SetSquareColor(BoardRepresentation.CoordFromIndex(move.StartSquare), boardTheme.lightSquares.moveFromHighlight, boardTheme.darkSquares.moveFromHighlight);
+
+        while (t <= 1)
+        {
+            yield return null;
+            t += Time.deltaTime * 1 / moveAnimDuration;
+            pieceT.position = Vector3.Lerp(startPos, targetPos, t);
+        }
+
+        UpdatePosition(board);
+        ResetSquareColors();
+        pieceT.position = startPos;
+
     }
 
     public void ResetPiecePosition(Coord pieceCoord)
