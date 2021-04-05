@@ -28,6 +28,9 @@ public class MoveGenerator
     public ulong opponentPawnAttackMap;
     ulong opponentSlidingAttackMap;
 
+    //Quiet move là những nước đi không ảnh hưởng đến số lượng các quân cờ 
+    //và số lượng quân cờ của một loại
+    //Ex: các nước capture và promotion không phải là quiet moves
     bool genQuiets;
     Board board;
 
@@ -157,15 +160,17 @@ public class MoveGenerator
             int rank = RankIndex(startSquare);
             bool oneStepPromotion = rank == finalRankBeforePromotion;
 
+            //Gen những nước đi quiet 
             if (genQuiets)
             {
                 int squareOneStepForward = startSquare + pawnOffset;
                 //Nếu ô phía trước không có quân nào
                 if (board.Squares[squareOneStepForward] == Piece.None)
                 {
-                    //Nếu pawn không bị pin hoặc đang di chuyển theo huong
+                    //Nếu pawn không bị pin hoặc không di chuyển theo đường thẳng
                     if (!IsPinned(startSquare) || IsMovingAlongRay(pawnOffset, startSquare, friendlyKingSquare))
                     {
+                        //Nếu king không bị check hoặc ô mục tiêu nằm trên ray mà king bị check
                         if (!inCheck || SquareIsInCheckRay(squareOneStepForward))
                         {
                             if (oneStepPromotion)//Nếu là nước promotion

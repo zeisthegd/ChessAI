@@ -87,7 +87,7 @@ public class GameManager : MonoBehaviour
     {
         bool animatedMove = playerToMove is AIPlayer;
         board.MakeMove(move);
-        //searchBoard.MakeMove(move);
+        searchBoard.MakeMove(move);
 
         gameMoves.Add(move);
         onMoveMade?.Invoke(move);

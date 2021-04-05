@@ -20,9 +20,9 @@ public class Board
 
 
     // Bits 0-3 store white and black kingside/queenside castling legality
-	// Bits 4-7 store file of ep square (starting at 1, so 0 = no ep square)
-	// Bits 8-13 captured piece
-	// Bits 14-... fifty mover counter
+    // Bits 4-7 store file of ep square (starting at 1, so 0 = no ep square)
+    // Bits 8-13 captured piece
+    // Bits 14-... fifty mover counter
     public uint currentGameState;
 
     public int plyCount;//Tổng ply của ván cờ
@@ -71,7 +71,7 @@ public class Board
             int piece = loadedPositionInfo.squares[squareIndex];//Code của một quân cờ
             Squares[squareIndex] = piece;
 
-            
+
             if (piece != Piece.None)
             {
                 int pieceType = Piece.PieceType(piece);
@@ -196,13 +196,13 @@ public class Board
                     break;
                 case Move.Flag.Castling:
                     bool kingSide = moveTo == BoardRepresentation.g1 || moveTo == BoardRepresentation.g8;
-                    int castlingRookFromIndex = (kingSide) ? moveTo + 1: moveTo - 2;
+                    int castlingRookFromIndex = (kingSide) ? moveTo + 1 : moveTo - 2;
                     int castlingRookToIndex = (kingSide) ? moveTo - 1 : moveTo + 1;
 
                     Squares[castlingRookFromIndex] = Piece.None;
                     Squares[castlingRookToIndex] = Piece.Rook | ColorToMove;
 
-                    rooks[ColorToMoveIndex].MovePiece(castlingRookFromIndex,castlingRookToIndex);
+                    rooks[ColorToMoveIndex].MovePiece(castlingRookFromIndex, castlingRookToIndex);
                     break;
             }
         }
@@ -211,28 +211,28 @@ public class Board
         Squares[moveTo] = pieceOnTargetSquare;
         Squares[moveFrom] = 0;
 
-        if(moveFlag == Move.Flag.PawnTwoForward)
+        if (moveFlag == Move.Flag.PawnTwoForward)
         {
             int file = BoardRepresentation.FileIndex(moveFrom) + 1;
-            currentGameState |= (ushort) (file << 4);
+            currentGameState |= (ushort)(file << 4);
         }
 
         //Xét quyền castle của 2 bên
-        if(originalCastleState != 0)
+        if (originalCastleState != 0)
         {
-            if(moveTo == BoardRepresentation.h1 || moveFrom == BoardRepresentation.h1)
+            if (moveTo == BoardRepresentation.h1 || moveFrom == BoardRepresentation.h1)
             {
                 newCastleState &= whiteCastleKingSideMask;
             }
-            else if(moveTo == BoardRepresentation.a1 || moveFrom == BoardRepresentation.a1)
+            else if (moveTo == BoardRepresentation.a1 || moveFrom == BoardRepresentation.a1)
             {
                 newCastleState &= whiteCastleQueenSideMask;
             }
-            if(moveTo == BoardRepresentation.h8 || moveFrom == BoardRepresentation.h8)
+            if (moveTo == BoardRepresentation.h8 || moveFrom == BoardRepresentation.h8)
             {
                 newCastleState &= blackCastleKingSideMask;
             }
-            else if(moveTo == BoardRepresentation.a8 || moveFrom == BoardRepresentation.a8)
+            else if (moveTo == BoardRepresentation.a8 || moveFrom == BoardRepresentation.a8)
             {
                 newCastleState &= blackCastleQueenSideMask;
             }
@@ -240,7 +240,7 @@ public class Board
 
         currentGameState |= newCastleState;
         currentGameState |= (uint)fiftyMoveCounter << 14;
-        
+
 
         //Change side to move
         WhiteToMove = !WhiteToMove;
@@ -249,6 +249,11 @@ public class Board
         ColorToMoveIndex = 1 - ColorToMoveIndex;
         plyCount++;
         fiftyMoveCounter++;
+    }
+
+    public void UnmakeMove(Move move, bool inSearch = false)
+    {
+        
     }
 
 
