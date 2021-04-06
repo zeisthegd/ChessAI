@@ -98,10 +98,8 @@ public class MoveGenerator
             }
 
             if (!SquareIsAttacked(targetSquare))
-            {
-
+            {  
                 moves.Add(new Move(friendlyKingSquare, targetSquare));
-
                 //Castling
                 if (!inCheck && !isCapture)
                 {
@@ -287,17 +285,17 @@ public class MoveGenerator
         PieceList rookMoves = board.rooks[friendlyColorIndex];
         for (int i = 0; i < rookMoves.Count; i++)
         {
-            GenerateSlidingPieceMoves(rookMoves[i], 0 ,4);
+            GenerateSlidingPieceMoves(rookMoves[i], 0, 4);
         }
         PieceList bishopMoves = board.bishops[friendlyColorIndex];
         for (int i = 0; i < bishopMoves.Count; i++)
         {
-            GenerateSlidingPieceMoves(bishopMoves[i], 4 ,8);
+            GenerateSlidingPieceMoves(bishopMoves[i], 4, 8);
         }
         PieceList queenMoves = board.queens[friendlyColorIndex];
         for (int i = 0; i < queenMoves.Count; i++)
         {
-            GenerateSlidingPieceMoves(queenMoves[i], 0 ,8);
+            GenerateSlidingPieceMoves(queenMoves[i], 0, 8);
         }
 
     }
@@ -577,7 +575,7 @@ public class MoveGenerator
     {
         get
         {
-            int mask = (board.WhiteToMove) ? 2 : 6;
+            int mask = (board.WhiteToMove) ? 2 : 8;
             return (board.currentGameState & mask) != 0;
         }
     }

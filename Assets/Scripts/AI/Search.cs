@@ -58,13 +58,13 @@ public class Search
         abortSearch = false;
         searchDiagnostics = new SearchDiagnostics();
 
-        SearchMoves(settings.depth,0,negativeInfinity,positiveInfinity);
+        SearchMoves(settings.depth, 0, negativeInfinity, positiveInfinity);
         bestMove = bestMoveThisIteration;
         bestEval = bestEvalThisIteration;
 
         onSearchComplete?.Invoke(bestMove);
 
-        LogDebugInfo();
+        //LogDebugInfo();
 
     }
 
@@ -84,8 +84,6 @@ public class Search
 
         if (plyFromRoot > 0)
         {
-
-
             alpha = Math.Max(alpha, -immediateMateScore + plyFromRoot);
             beta = Math.Min(beta, immediateMateScore - plyFromRoot);
             if (alpha >= beta)
@@ -120,6 +118,7 @@ public class Search
 
         for (int i = 0; i < moves.Count; i++)
         {
+            //Debug.Log($"Searching move: {moves[i].StartSquare}/{moves[i].TargetSquare}");     
             board.MakeMove(moves[i], inSearch: true);
             int eval = -SearchMoves(depth - 1, plyFromRoot + 1, -beta, -alpha);
             board.UnmakeMove(moves[i], inSearch: true);
@@ -169,6 +168,7 @@ public class Search
 
         for (int i = 0; i < moves.Count; i++)
         {
+            //Debug.Log($"QuiescenceSearching move: {moves[i].StartSquare}/{moves[i].TargetSquare}");
             board.MakeMove(moves[i], true);
             eval = -QuiescenceSearch(-alpha, -beta);
             board.UnmakeMove(moves[i], true);

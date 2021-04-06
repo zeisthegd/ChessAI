@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System;
 //Back-end của bàn cờ.
 public class Board
 {
@@ -116,7 +116,7 @@ public class Board
         int whiteCastle = ((loadedPositionInfo.whiteCastleKingSide) ? 1 << 0 : 0 | ((loadedPositionInfo.whiteCastleQueenSide) ? 1 << 1 : 0));
         int blackCastle = ((loadedPositionInfo.blackCastleKingSide) ? 1 << 2 : 0 | ((loadedPositionInfo.blackCastleQueenSide) ? 1 << 3 : 0));
         int epState = loadedPositionInfo.epFile << 4;
-        ushort initialGameState = (ushort) (whiteCastle | blackCastle | epState);
+        ushort initialGameState = (ushort)(whiteCastle | blackCastle | epState);
         gameStateHistory.Push(initialGameState);
         currentGameState = initialGameState;
         plyCount = loadedPositionInfo.plyCount;
@@ -162,9 +162,7 @@ public class Board
         }
         else
         {
-            Debug.Log(Piece.PieceType(movePiece));
             GetPieceList(movePieceType, ColorToMoveIndex).MovePiece(moveFrom, moveTo);
-          
         }
 
         int pieceOnTargetSquare = movePiece;
@@ -203,7 +201,7 @@ public class Board
                     int epPawnSquare = moveTo + ((ColorToMove == Piece.White) ? -8 : 8);//Ô "phía sau" quân pawn đã đi nước en passant
                     currentGameState |= (ushort)(Squares[epPawnSquare] << 8);
                     Squares[epPawnSquare] = 0;
-                    pawns[ColorToMoveIndex].RemovePieceAtSquare(epPawnSquare);
+                    pawns[opponentColorIndex].RemovePieceAtSquare(epPawnSquare);
 
                     break;
                 case Move.Flag.Castling:
@@ -252,7 +250,6 @@ public class Board
 
         currentGameState |= newCastleState;
         currentGameState |= (uint)fiftyMoveCounter << 14;
-
         gameStateHistory.Push(currentGameState);
 
         //Change side to move

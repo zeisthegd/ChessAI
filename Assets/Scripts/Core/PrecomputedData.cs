@@ -124,7 +124,7 @@ public static class PrecomputedData
                     int kingMoveToSquareRank = kingMoveToSquare / 8;
                     int kingMoveToSquareFile = kingMoveToSquare - kingMoveToSquareRank * 8;
 
-                    int maxCoordMoveDst = System.Math.Max(System.Math.Abs(rank - kingMoveToSquareRank), System.Math.Abs(file - kingMoveToSquareFile));
+                    int maxCoordMoveDst = System.Math.Max(System.Math.Abs(file - kingMoveToSquareFile),System.Math.Abs(rank - kingMoveToSquareRank));
                     if (maxCoordMoveDst == 1)
                     {
                         legalKingMoves.Add((byte)kingMoveToSquare);
@@ -177,7 +177,7 @@ public static class PrecomputedData
                     rookMoves[squareIndex] |= 1ul << targetSquare;
                 }
             }
-
+            //Bishop
             for (int directionIndex = 4; directionIndex < 8; directionIndex++)
             {
                 int currentDirOffset = directionOffsets[directionIndex];

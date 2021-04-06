@@ -179,7 +179,7 @@ public class HumanPlayer : Player
 
 
         if (moveIsLegal)
-        {
+        {        
             ChoseMove(chosenMove);
             currentState = InputState.None;
         }

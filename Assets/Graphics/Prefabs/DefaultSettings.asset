@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97b457a5e701f4144a0cdadf03eba217, type: 3}
   m_Name: DefaultSettings
   m_EditorClassIdentifier: 
-  depth: 1
+  depth: 5
   useIterativeDeepening: 1
   useTranspositionTable: 1
   useThreading: 1
@@ -29,4 +29,4 @@ MonoBehaviour:
     move: 
     eval: 0
     isBook: 0
-    numPositionsEvaluated: 29
+    numPositionsEvaluated: 328

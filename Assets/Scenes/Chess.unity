@@ -164,11 +164,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b428482191d29d48bc7cd446b9ffb9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customPosition: 1rbq1r1k/2pp2pp/p1n3p1/2b1p3/R3P3/1BP2N2/1P3PPP/1NBQ1RK1 w - -
-    0 1
+  customPosition: 1rbq1r1k/2pp2pp/p1n3p1/2b1p3/R3P3/1QP2N2/1P3PPP/1NB2RK1 w - - 0
+    1
   loadCustomPosition: 1
-  blackPlayerType: 1
-  whitePlayerType: 1
+  blackPlayerType: 0
+  whitePlayerType: 0
   aiSettings: {fileID: 11400000, guid: 5fec86c336001fe4398912eb13761488, type: 2}
   colors: []
 --- !u!1 &519420028
