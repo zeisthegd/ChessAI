@@ -164,12 +164,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b428482191d29d48bc7cd446b9ffb9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  customPosition: 1rbq1r1k/2pp2pp/p1n3p1/2b1p3/R3P3/1QP2N2/1P3PPP/1NB2RK1 w - - 0
-    1
-  loadCustomPosition: 1
-  blackPlayerType: 0
+  customPosition: b7/4K1N1/8/P4Pp1/2k5/p2p2PP/2p3Pp/2Br4 w - - 0 1
+  loadCustomPosition: 0
+  blackPlayerType: 1
   whitePlayerType: 0
-  aiSettings: {fileID: 11400000, guid: 5fec86c336001fe4398912eb13761488, type: 2}
+  aiSettings: {fileID: 11400000, guid: e8f6be2063a2c1f4eabe7c57c2a4fdba, type: 2}
   colors: []
 --- !u!1 &519420028
 GameObject:

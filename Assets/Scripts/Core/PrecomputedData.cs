@@ -53,10 +53,10 @@ public static class PrecomputedData
     {
         pawnAttacksWhite = new int[64][];
         pawnAttacksBlack = new int[64][];
-        numSquaresToEdge = new int[64][];
-
+        numSquaresToEdge = new int[8][];
         knightMoves = new byte[64][];
         kingMoves = new byte[64][];
+        numSquaresToEdge = new int[64][];
 
         rookMoves = new ulong[64];
         bishopMoves = new ulong[64];
@@ -155,7 +155,7 @@ public static class PrecomputedData
             {
                 if (rank < 7)
                 {
-                    pawnCapturesWhite.Add(squareIndex + 7);
+                    pawnCapturesWhite.Add(squareIndex + 9);
                     pawnAttackBitBoards[squareIndex][Board.WhiteIndex] |= 1ul << (squareIndex + 9);
                 }
                 if (rank > 0)

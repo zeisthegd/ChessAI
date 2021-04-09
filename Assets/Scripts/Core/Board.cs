@@ -54,75 +54,7 @@ public class Board
     }
 
     //Load thế cờ mặc định
-    public void LoadStartPosition()
-    {
-        LoadPosition(FenUtility.startFen);
-    }
-
-    //Load vị trí của thế cờ từ 1 đoạn FEN
-    public void LoadPosition(string fen)
-    {
-        Initialized();
-        //Load position info từ FEN
-        var loadedPositionInfo = FenUtility.PositionFromFen(fen);
-
-        //Lặp qua các ô trên bàn cờ
-        for (int squareIndex = 0; squareIndex < 64; squareIndex++)
-        {
-            int piece = loadedPositionInfo.squares[squareIndex];//Code của một quân cờ
-            Squares[squareIndex] = piece;
-
-
-            if (piece != Piece.None)
-            {
-                int pieceType = Piece.PieceType(piece);
-                int pieceColorIndex = (Piece.IsColor(piece, Piece.White)) ? WhiteIndex : BlackIndex;
-                if (Piece.IsSlidingPiece(piece))
-                {
-                    if (pieceType == Piece.Queen)
-                    {
-                        queens[pieceColorIndex].AddPieceAtSquare(squareIndex);
-                    }
-                    else if (pieceType == Piece.Rook)
-                    {
-                        rooks[pieceColorIndex].AddPieceAtSquare(squareIndex);
-                    }
-                    else if (pieceType == Piece.Bishop)
-                    {
-                        bishops[pieceColorIndex].AddPieceAtSquare(squareIndex);
-                    }
-                }
-                else if (pieceType == Piece.Knight)
-                {
-                    knights[pieceColorIndex].AddPieceAtSquare(squareIndex);
-                }
-                else if (pieceType == Piece.Pawn)
-                {
-                    pawns[pieceColorIndex].AddPieceAtSquare(squareIndex);
-                }
-                else if (pieceType == Piece.King)
-                {
-                    KingSquare[pieceColorIndex] = squareIndex;
-                }
-            }
-        }
-        //Change side to move
-        WhiteToMove = loadedPositionInfo.whiteToMove;
-        ColorToMove = (WhiteToMove) ? Piece.White : Piece.Black;
-        OpponentColor = (WhiteToMove) ? Piece.Black : Piece.White;
-        ColorToMoveIndex = (WhiteToMove) ? WhiteIndex : BlackIndex;
-
-        //Create initial gamestate
-        int whiteCastle = ((loadedPositionInfo.whiteCastleKingSide) ? 1 << 0 : 0 | ((loadedPositionInfo.whiteCastleQueenSide) ? 1 << 1 : 0));
-        int blackCastle = ((loadedPositionInfo.blackCastleKingSide) ? 1 << 2 : 0 | ((loadedPositionInfo.blackCastleQueenSide) ? 1 << 3 : 0));
-        int epState = loadedPositionInfo.epFile << 4;
-        ushort initialGameState = (ushort)(whiteCastle | blackCastle | epState);
-        gameStateHistory.Push(initialGameState);
-        currentGameState = initialGameState;
-        plyCount = loadedPositionInfo.plyCount;
-
-
-    }
+    
 
 
     //Thực hiện nước đi và update bàn cờ
@@ -143,7 +75,7 @@ public class Board
         int movePieceType = Piece.PieceType(movePiece);
 
         int moveFlag = move.MoveFlag;
-        bool isPromotion = move.IsInvalid;
+        bool isPromotion = move.IsPromotion;
         bool isEnpassant = moveFlag == Move.Flag.EnPassantCapture;
 
 
@@ -356,6 +288,75 @@ public class Board
 
     }
 
+    public void LoadStartPosition()
+    {
+        LoadPosition(FenUtility.startFen);
+    }
+
+    //Load vị trí của thế cờ từ 1 đoạn FEN
+    public void LoadPosition(string fen)
+    {
+        Initialized();
+        //Load position info từ FEN
+        var loadedPositionInfo = FenUtility.PositionFromFen(fen);
+
+        //Lặp qua các ô trên bàn cờ
+        for (int squareIndex = 0; squareIndex < 64; squareIndex++)
+        {
+            int piece = loadedPositionInfo.squares[squareIndex];//Code của một quân cờ
+            Squares[squareIndex] = piece;
+
+
+            if (piece != Piece.None)
+            {
+                int pieceType = Piece.PieceType(piece);
+                int pieceColorIndex = (Piece.IsColor(piece, Piece.White)) ? WhiteIndex : BlackIndex;
+                if (Piece.IsSlidingPiece(piece))
+                {
+                    if (pieceType == Piece.Queen)
+                    {
+                        queens[pieceColorIndex].AddPieceAtSquare(squareIndex);
+                    }
+                    else if (pieceType == Piece.Rook)
+                    {
+                        rooks[pieceColorIndex].AddPieceAtSquare(squareIndex);
+                    }
+                    else if (pieceType == Piece.Bishop)
+                    {
+                        bishops[pieceColorIndex].AddPieceAtSquare(squareIndex);
+                    }
+                }
+                else if (pieceType == Piece.Knight)
+                {
+                    knights[pieceColorIndex].AddPieceAtSquare(squareIndex);
+                }
+                else if (pieceType == Piece.Pawn)
+                {
+                    pawns[pieceColorIndex].AddPieceAtSquare(squareIndex);
+                }
+                else if (pieceType == Piece.King)
+                {
+                    KingSquare[pieceColorIndex] = squareIndex;
+                }
+            }
+        }
+        //Change side to move
+        WhiteToMove = loadedPositionInfo.whiteToMove;
+        ColorToMove = (WhiteToMove) ? Piece.White : Piece.Black;
+        OpponentColor = (WhiteToMove) ? Piece.Black : Piece.White;
+        ColorToMoveIndex = (WhiteToMove) ? WhiteIndex : BlackIndex;
+
+        //Create initial gamestate
+        int whiteCastle = ((loadedPositionInfo.whiteCastleKingSide) ? 1 << 0 : 0 | ((loadedPositionInfo.whiteCastleQueenSide) ? 1 << 1 : 0));
+        int blackCastle = ((loadedPositionInfo.blackCastleKingSide) ? 1 << 2 : 0 | ((loadedPositionInfo.blackCastleQueenSide) ? 1 << 3 : 0));
+        int epState = loadedPositionInfo.epFile << 4;
+        ushort initialGameState = (ushort)(whiteCastle | blackCastle | epState);
+        gameStateHistory.Push(initialGameState);
+        currentGameState = initialGameState;
+        plyCount = loadedPositionInfo.plyCount;
+
+
+    }
 
 
     void Initialized()

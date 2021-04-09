@@ -26,7 +26,6 @@ public class AIPlayer : Player
     {
         if(moveFound)
         {
-            Debug.Log($"Choosed Move: {move.StartSquare}/{move.TargetSquare}");
             moveFound = false;
             ChoseMove(move);           
         }
@@ -38,10 +37,7 @@ public class AIPlayer : Player
     {
         search.searchDiagnostics.isBook = false;
         moveFound = false;
-
         Move bookMove = Move.InvalidMove;
-
-
         StartSearch();
     }
 

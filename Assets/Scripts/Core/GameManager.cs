@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public enum PlayerType { Human, AI }
-    public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, Repetition, FiftyRuleMove, InsufficientMaterial }
+    public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, Repetition, FiftyMoveRule, InsufficientMaterial }
 
     public event System.Action onPositionLoaded;
     public event System.Action<Move> onMoveMade;
@@ -134,7 +134,7 @@ public class GameManager : MonoBehaviour
         //Fifty-move rule
         if (board.fiftyMoveCounter >= 50)
         {
-            return Result.FiftyRuleMove;
+            return Result.FiftyMoveRule;
         }
 
         //
