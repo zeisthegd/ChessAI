@@ -73,10 +73,6 @@ public class FenUtility : MonoBehaviour
     }
 
 
-
-
-
-
     public class LoadedPositionInfo
     {
         public int[] squares;

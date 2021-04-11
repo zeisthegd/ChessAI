@@ -134,12 +134,13 @@ public class Search
         moveOrdering.OrderMoves(board, moves);
         if (moves.Count == 0)
         {
+            //Check mate
             if (moveGenerator.InCheck)
             {
                 int mateScore = immediateMateScore - plyFromRoot;
                 return -mateScore;
             }
-            else
+            else//Stalemate
             {
                 return 0;
             }
@@ -179,7 +180,6 @@ public class Search
 
         return alpha;
     }
-
 
     //Tìm kiếm một quiet move position trong số những moves
     int QuiescenceSearch(int alpha, int beta)

@@ -344,8 +344,8 @@ public class MoveGenerator
                     }
                 }
 
-                //Nếu square target có quân nào đó thì không thể đi tiếp
-                //Hoặc nếu nước đi này ngăn chặn một nước check thì những nước sau nó không thể chặn check
+                //Nếu square target có quân nào đó thì không thể dò tiếp
+                //Hoặc nếu ô này ngăn chặn một nước check thì những ô sau nó không thể chặn check
                 if (isCapture || movePreventsCheck)
                     break;
 
@@ -355,6 +355,7 @@ public class MoveGenerator
 
 
     }
+    
 
     void CalculateAttackData()
     {

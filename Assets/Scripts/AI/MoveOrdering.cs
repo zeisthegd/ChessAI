@@ -21,14 +21,14 @@ public class MoveOrdering
 
     public void OrderMoves(Board board, List<Move> moves)
     {
-        for(int i = 0;i<moves.Count;i++)
+        for (int i = 0; i < moves.Count; i++)
         {
             int score = 0;
             int movePieceType = Piece.PieceType(board.Squares[moves[i].StartSquare]);
             int capturedPieceType = Piece.PieceType(board.Squares[moves[i].TargetSquare]);
             int flag = moves[i].MoveFlag;
 
-            if(capturedPieceType != Piece.None)
+            if (capturedPieceType != Piece.None)
             {
                 //Xắp sếp các nước đi để thử tìm ra các nước có thể ăn được quân cờ có giá trị cao của đổi phương
                 //Bằng quân cờ có giá trị thấp hơn của quân ta
@@ -37,21 +37,21 @@ public class MoveOrdering
                 score = capturedPieceValueMultiplier * GetPieceValue(capturedPieceType) - GetPieceValue(movePieceType);
             }
 
-            if(movePieceType == Piece.Pawn)
+            if (movePieceType == Piece.Pawn)
             {
-                if(flag == Move.Flag.PromoteToQueen)
+                if (flag == Move.Flag.PromoteToQueen)
                 {
                     score += Evaluation.queenValue;
                 }
-                if(flag == Move.Flag.PromoteToKnight)
+                if (flag == Move.Flag.PromoteToKnight)
                 {
                     score += Evaluation.knightValue;
                 }
-                if(flag == Move.Flag.PromoteToRook)
+                if (flag == Move.Flag.PromoteToRook)
                 {
                     score += Evaluation.rookValue;
                 }
-                if(flag == Move.Flag.PromoteToBishop)
+                if (flag == Move.Flag.PromoteToBishop)
                 {
                     score += Evaluation.bishopValue;
                 }
@@ -60,14 +60,15 @@ public class MoveOrdering
             else
             {
                 //Trừ điểm những nước đi vào ô mà quân pawn của đối phương đang chiếm
-                if(BitBoardUtility.ContainsSquare(moveGenerator.opponentPawnAttackMap,moves[i].TargetSquare))
+                if (BitBoardUtility.ContainsSquare(moveGenerator.opponentPawnAttackMap, moves[i].TargetSquare))
                 {
-                    score-=squareControlledByOpponentPawnPenalty;
+                    score -= squareControlledByOpponentPawnPenalty;
                 }
             }
             movesScore[i] = score;
         }
-    
+        Sort(moves);
+
     }
 
     static int GetPieceValue(int pieceType)
@@ -91,15 +92,15 @@ public class MoveOrdering
 
     void Sort(List<Move> moves)
     {
-        for(int i = 0; i < moves.Count;i++)
+        for (int i = 0; i < moves.Count - 1; i++)
         {
-            for(int j = i + 1;j > 0;j--)
+            for (int j = i + 1; j > 0; j--)
             {
                 int swapIndex = j - 1;
-                if(movesScore[swapIndex] <movesScore[j])
+                if (movesScore[swapIndex] < movesScore[j])
                 {
-                    (moves[j],moves[swapIndex]) = (moves[swapIndex],moves[j]);
-                    (movesScore[j],movesScore[swapIndex]) = (movesScore[swapIndex],movesScore[j]);
+                    (moves[j], moves[swapIndex]) = (moves[swapIndex], moves[j]);
+                    (movesScore[j], movesScore[swapIndex]) = (movesScore[swapIndex], movesScore[j]);
                 }
             }
         }

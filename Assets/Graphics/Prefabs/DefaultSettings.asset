@@ -14,20 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   depth: 5
   useIterativeDeepening: 1
-  useTranspositionTable: 1
-  useThreading: 1
   useFixedDepthSearch: 1
-  searchTimeMilis: 1278
   endlessSearchMode: 0
-  clearTTEachMove: 1
-  useBook: 1
-  maxBookPly: 10
   promotionsToSearch: 0
   diagnostics:
-    lastCompleteDepth: 2
+    lastCompleteDepth: 4
     moveVal: 
-    move: c1-c6
-    eval: 99999
+    move: h7-e8
+    eval: -1128
     isBook: 0
-    numPositionsEvaluated: 383
-    numCutoffs: 114
+    numPositionsEvaluated: 4057
+    numCutoffs: 1005

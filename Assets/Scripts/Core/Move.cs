@@ -93,11 +93,6 @@ public readonly struct Move
         }
     }
 
-    public static bool SameMove(Move a, Move b)
-    {
-        return a.moveValue == b.moveValue;
-    }
-
     public ushort Value
     {
         get{
