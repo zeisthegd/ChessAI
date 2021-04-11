@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class Search
 {
-    const int transpositionTableSize = 64000;
     const int immediateMateScore = 100000;
     const int positiveInfinity = 9999999;
     const int negativeInfinity = -positiveInfinity;
@@ -22,7 +21,7 @@ public class Search
     bool abortSearch;
 
     Move invalidMove;
-    //moveordering
+    MoveOrdering moveOrdering;
     AISettings settings;
     Board board;
     Evaluation evaluation;
@@ -41,6 +40,7 @@ public class Search
         this.board = board;
         evaluation = new Evaluation();
         moveGenerator = new MoveGenerator();
+        moveOrdering = new MoveOrdering(moveGenerator);
         invalidMove = Move.InvalidMove;
 
     }
@@ -58,9 +58,40 @@ public class Search
         abortSearch = false;
         searchDiagnostics = new SearchDiagnostics();
 
-        SearchMoves(settings.depth, 0, negativeInfinity, positiveInfinity);
-        bestMove = bestMoveThisIteration;
-        bestEval = bestEvalThisIteration;
+
+        //Iterative deepening. Nghĩa là thực hiện full search với depth = 1, sau đó là depth = 2, và tiếp tục.
+        //Cho phép search có thể bị ngắt bất cứ lúc nào mà vẫn cho ra một kết quả hữu ích từ lần search trước.
+        if (settings.useIterativeDeepening)
+        {
+            int targetDepth = (settings.useFixedDepthSearch) ? settings.depth : int.MaxValue;
+            for (int searchDepth = 0; searchDepth < targetDepth; searchDepth++)
+            {
+                SearchMoves(searchDepth, 0, negativeInfinity, positiveInfinity);
+                if (abortSearch)
+                    break;
+                else
+                {
+                    currentIterativeSearchDepth = searchDepth;
+                    bestMove = bestMoveThisIteration;
+                    bestEval = bestEvalThisIteration;
+
+                    //Update 
+                    searchDiagnostics.eval = bestEval;
+                    searchDiagnostics.move = bestMove.Name;
+                    searchDiagnostics.lastCompleteDepth = searchDepth;
+
+                    if (IsMateScore(bestEval) && !settings.endlessSearchMode)
+                        break;
+                }
+            }
+        }
+        else
+        {
+            SearchMoves(settings.depth, 0, negativeInfinity, positiveInfinity);
+            bestMove = bestMoveThisIteration;
+            bestEval = bestEvalThisIteration;
+        }
+
 
         onSearchComplete?.Invoke(bestMove);
 
@@ -100,7 +131,7 @@ public class Search
         }
 
         List<Move> moves = moveGenerator.GenerateMoves(board);
-
+        moveOrdering.OrderMoves(board, moves);
         if (moves.Count == 0)
         {
             if (moveGenerator.InCheck)
@@ -165,18 +196,19 @@ public class Search
             alpha = eval;
 
         List<Move> moves = moveGenerator.GenerateMoves(board, false);
-
+        moveOrdering.OrderMoves(board, moves);
         for (int i = 0; i < moves.Count; i++)
         {
             //Debug.Log($"QuiescenceSearching move: {moves[i].StartSquare}/{moves[i].TargetSquare}");
             board.MakeMove(moves[i], true);
-            eval = -QuiescenceSearch(-alpha, -beta);
+            eval = -QuiescenceSearch(-beta, -alpha);
             board.UnmakeMove(moves[i], true);
             numQNodes++;
 
             if (eval >= beta)
             {
                 numCutoffs++;
+                searchDiagnostics.numCutoffs = numCutoffs;
                 return beta;
             }
 
@@ -244,5 +276,6 @@ public class Search
         public int eval;
         public bool isBook;
         public int numPositionsEvaluated;
+        public int numCutoffs;
     }
 }

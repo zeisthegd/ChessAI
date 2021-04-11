@@ -16,17 +16,18 @@ MonoBehaviour:
   useIterativeDeepening: 1
   useTranspositionTable: 1
   useThreading: 1
-  useFixedDepthSearch: 0
-  searchTimeMilis: 1250
+  useFixedDepthSearch: 1
+  searchTimeMilis: 1278
   endlessSearchMode: 0
   clearTTEachMove: 1
   useBook: 1
   maxBookPly: 10
   promotionsToSearch: 0
   diagnostics:
-    lastCompleteDepth: 0
+    lastCompleteDepth: 2
     moveVal: 
-    move: 
-    eval: 0
+    move: c1-c6
+    eval: 99999
     isBook: 0
-    numPositionsEvaluated: 328
+    numPositionsEvaluated: 383
+    numCutoffs: 114
