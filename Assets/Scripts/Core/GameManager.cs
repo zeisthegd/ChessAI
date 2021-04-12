@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     public enum PlayerType { Human, AI }
     public enum Result { Playing, WhiteIsMated, BlackIsMated, Stalemate, Repetition, FiftyMoveRule, InsufficientMaterial }
 
+    public TMPro.TMP_Text resultUI;
     public event System.Action onPositionLoaded;
     public event System.Action<Move> onMoveMade;
 
@@ -51,7 +52,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void NewGame(PlayerType whitePlayerType = PlayerType.Human, PlayerType blackPlayerType = PlayerType.Human)
+    public void NewGame(PlayerType whitePlayerType = PlayerType.Human, PlayerType blackPlayerType = PlayerType.Human)
     {
         if (loadCustomPosition)
         {
@@ -73,6 +74,7 @@ public class GameManager : MonoBehaviour
 
         NotifyPlayerToMove();
     }
+    
 
     void CreatePlayer(ref Player player, PlayerType playerType)
     {
@@ -83,7 +85,7 @@ public class GameManager : MonoBehaviour
             player = new HumanPlayer(board);
         else
         {
-            player = new AIPlayer(searchBoard,aiSettings);
+            player = new AIPlayer(searchBoard, aiSettings);
         }
 
         player.onMoveChosen += OnMoveChosen;
@@ -105,6 +107,7 @@ public class GameManager : MonoBehaviour
     void NotifyPlayerToMove()
     {
         gameResult = GetGameState();
+        PrintGameResult(gameResult);
         if (gameResult == Result.Playing)
         {
             playerToMove = (board.WhiteToMove) ? whitePlayer : blackPlayer;
@@ -112,7 +115,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.Log ("Game Over: " + gameResult);
+            Debug.Log("Game Over: " + gameResult);
         }
     }
 
@@ -144,9 +147,9 @@ public class GameManager : MonoBehaviour
         int numKnights = board.knights[Board.WhiteIndex].Count + board.knights[Board.BlackIndex].Count;
         int numQueens = board.queens[Board.WhiteIndex].Count + board.queens[Board.BlackIndex].Count;
 
-        if(numPawns + numRooks + numQueens == 0)
+        if (numPawns + numRooks + numQueens == 0)
         {
-            if(numKnights == 1 || numBishops == 1)
+            if (numKnights == 1 || numBishops == 1)
             {
                 return Result.InsufficientMaterial;
             }
@@ -155,5 +158,59 @@ public class GameManager : MonoBehaviour
         return Result.Playing;
     }
 
+    void PrintGameResult(Result result)
+    {
+        float subtitleSize = resultUI.fontSize * 0.75f;
+        string subtitleSettings = $"<color=#787878> <size={subtitleSize}>";
+
+        if (result == Result.Playing)
+        {
+            resultUI.text = "Playing";
+        }
+        else if (result == Result.WhiteIsMated || result == Result.BlackIsMated)
+        {
+            resultUI.text = "Checkmate!";
+        }
+        else if (result == Result.FiftyMoveRule)
+        {
+            resultUI.text = "Draw";
+            resultUI.text += subtitleSettings + "\n(50 move rule)";
+        }
+        else if (result == Result.Repetition)
+        {
+            resultUI.text = "Draw";
+            resultUI.text += subtitleSettings + "\n(3-fold repetition)";
+        }
+        else if (result == Result.Stalemate)
+        {
+            resultUI.text = "Draw";
+            resultUI.text += subtitleSettings + "\n(Stalemate)";
+        }
+        else if (result == Result.InsufficientMaterial)
+        {
+            resultUI.text = "Draw";
+            resultUI.text += subtitleSettings + "\n(Insufficient material)";
+        }
+    }
+
+    public void NewGame(bool humanPlaysWhite)
+    {
+        boardUI.SetPerspective(humanPlaysWhite);
+        NewGame((humanPlaysWhite) ? PlayerType.Human : PlayerType.AI, (humanPlaysWhite) ? PlayerType.AI : PlayerType.Human);
+    }public void NewHumanVersusHumanGame()
+    {
+        boardUI.SetPerspective(true);
+        NewGame(PlayerType.Human, PlayerType.Human);
+    }
+    public void NewComputerVersusComputerGame()
+    {
+        boardUI.SetPerspective(true);
+        NewGame(PlayerType.AI, PlayerType.AI);
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
 
 }

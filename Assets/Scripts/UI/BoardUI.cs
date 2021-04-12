@@ -11,6 +11,8 @@ public class BoardUI : MonoBehaviour
     public bool showLegalMoves;
     public bool whiteIsBottom;
 
+    [SerializeField]
+    Shader squareShader;
     Move lastMadeMove;
     MoveGenerator moveGenerator;
 
@@ -27,7 +29,6 @@ public class BoardUI : MonoBehaviour
 
     private void CreateBoardUI()
     {
-        Shader squareShader = Shader.Find("Unlit/Color");
         squareRenderers = new MeshRenderer[8, 8];
         squarePieceRenderers = new SpriteRenderer[8, 8];
 

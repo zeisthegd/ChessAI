@@ -156,8 +156,8 @@ public class Search
             board.UnmakeMove(moves[i], inSearch: true);
             numNodes++;
 
-            //Nước đi tìm được quá "tốt" nên đối phương sẽ không để nó xảy ra
-            //Vì vậy sẽ chọn một nước đi đã tìm được trước đó. Bỏ qua những nước đi còn lại
+            //Nước đi tìm được có lợi hơn cho đối phương so với nước đi có lợi đã tìm được trước đó
+            //(bằng cách chọn một nước đi đã tìm được trước đó). Bỏ qua những nước đi còn lại trong nhánh
             if (eval >= beta)
             {
                 numCutoffs++;
