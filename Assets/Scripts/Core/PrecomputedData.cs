@@ -9,7 +9,7 @@ public static class PrecomputedData
     public static readonly int[][] numSquaresToEdge;
 
     public static readonly byte[][] knightMoves;
-    //Ex: kingMoves[0][1] == 1: king ở á có thể đi tới a2
+    //Ex: kingMoves[0][]: chứa các ô king có thể đi tới từ a1
     public static readonly byte[][] kingMoves;
 
     public static readonly byte[][] pawnAttackDirections =
@@ -18,7 +18,7 @@ public static class PrecomputedData
         new byte[] {7, 5}
     };
 
-    public static readonly int[][] pawnAttacksWhite;//[squareIndex][bitBoard]
+    public static readonly int[][] pawnAttacksWhite;//[squareIndex][]
     public static readonly int[][] pawnAttacksBlack;//Same
     public static readonly int[] directionLookUp;//Same
     public static readonly ulong[] kingAttackBitBoards;//Ex: kingAttackBitBoards[i] = [64bit]. Những ô mà king tại ô i đang tấn công

@@ -23,10 +23,10 @@ public class MoveGenerator
     ulong checkRayBitmask;
     ulong pinRayBitmask;
     ulong opponentKnightAttacks;//Các ô mà knight của đối thủ có thể tấn công
-    ulong opponentAttackNoPawns;
-    public ulong opponentAttackMap;
-    public ulong opponentPawnAttackMap;
-    ulong opponentSlidingAttackMap;
+    ulong opponentAttackNoPawns;//Các ô bị các quân cờ khác Pawn của quân địch tấn công
+    public ulong opponentAttackMap;//Các ô bị quân địch tấn công
+    public ulong opponentPawnAttackMap;//Các ô bị các quân pawn của quân địch tấn công
+    ulong opponentSlidingAttackMap;//Các ô bị các quân Rook, Bishop, Queen địch tấn công
 
     //Quiet move là những nước đi không ảnh hưởng đến số lượng các quân cờ 
     //và số lượng quân cờ của một loại
@@ -87,6 +87,10 @@ public class MoveGenerator
             {
                 continue;
             }
+            if (!SquareIsAttacked(targetSquare))
+            {
+                moves.Add(new Move(friendlyKingSquare, targetSquare));
+            }
 
             bool isCapture = Piece.IsColor(pieceOnTargetSquare, opponentColor);
             if (!isCapture)
@@ -97,10 +101,11 @@ public class MoveGenerator
                 }
             }
 
+            
+
             if (!SquareIsAttacked(targetSquare))
             {
                 moves.Add(new Move(friendlyKingSquare, targetSquare));
-                //Castling
                 if (!inCheck && !isCapture)
                 {
                     //Castle kingside
@@ -275,7 +280,8 @@ public class MoveGenerator
                 bool isCapture = Piece.IsColor(targetSquarePiece, opponentColor);
                 if (genQuiets || isCapture)
                 {
-                    if (Piece.IsColor(targetSquarePiece, friendlyColor) || (inCheck && !SquareIsInCheckRay(targetSquare)))
+                    if (Piece.IsColor(targetSquarePiece, friendlyColor) 
+                    || (inCheck && !SquareIsInCheckRay(targetSquare)))
                     {
                         continue;
                     }
@@ -295,7 +301,7 @@ public class MoveGenerator
         PieceList bishopMoves = board.bishops[friendlyColorIndex];
         for (int i = 0; i < bishopMoves.Count; i++)
         {
-            GenerateSlidingPieceMoves(bishopMoves[i], 4, 8);
+            GenerateSlidingPieceMoves(bishopMoves[i], 4, 8); 
         }
         PieceList queenMoves = board.queens[friendlyColorIndex];
         for (int i = 0; i < queenMoves.Count; i++)

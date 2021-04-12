@@ -6,7 +6,7 @@ using UnityEngine;
 public class FenUtility : MonoBehaviour
 {
     static Dictionary<char,int> pieceTypeFromSymbol = new Dictionary<char, int>(){
-        ['k'] = Piece.King, ['p'] = Piece.Pawn, ['n'] = Piece.Knight, 
+        ['k'] = Piece.King, ['p'] = Piece.Pawn, ['n'] = Piece.Knight,  
         ['b'] = Piece.Bishop, ['r'] = Piece.Rook, ['q'] = Piece.Queen
     };
 
