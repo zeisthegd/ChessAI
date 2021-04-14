@@ -12,16 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97b457a5e701f4144a0cdadf03eba217, type: 3}
   m_Name: DefaultSettings
   m_EditorClassIdentifier: 
-  depth: 5
+  depth: 2
   useIterativeDeepening: 1
   useFixedDepthSearch: 1
   endlessSearchMode: 0
   promotionsToSearch: 0
   diagnostics:
-    lastCompleteDepth: 4
+    lastCompleteDepth: 1
     moveVal: 
-    move: h7-e8
-    eval: -1128
+    move: e7-d7
+    eval: 1614
     isBook: 0
-    numPositionsEvaluated: 4057
-    numCutoffs: 1005
+    numPositionsEvaluated: 140
+    numCutoffs: 14
